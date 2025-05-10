@@ -13,6 +13,7 @@ const Greeting = styled(motion.h2)`
   color: ${({ theme }) => theme.colors.primaryDark};
 `;
 
+// stats bar stays the same
 const StatsBar = styled(motion.div)`
   display: flex;
   gap: 16px;
@@ -41,7 +42,8 @@ const StatLabel = styled.div`
   margin-top: 4px;
 `;
 
-const Grid = styled.div`
+// make Grid a motion container
+const Grid = styled(motion.div)`
   width: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -59,13 +61,11 @@ const WidgetCard = styled(motion.div)`
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
   height: 160px;
   padding: 16px;
-
   display: flex;
   flex-direction: column;
   gap: 15px;
-  align-items: center; /* horizontal center */
-  justify-content: center; /* vertical center */
-
+  align-items: center;
+  justify-content: center;
   opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
   transition: transform 0.2s, box-shadow 0.2s;
 
@@ -125,22 +125,18 @@ export default function Home() {
     {
       label: "Incident Report",
       icon: FileText,
-      // disabled: true,
     },
     {
       label: "WaterBot AI",
       icon: Bot,
-      // disabled: true,
     },
     {
       label: "Call The Office",
       icon: Lock,
-      // disabled: true,
     },
     {
       label: "Coming Soon",
       icon: Lock,
-      // disabled: true,
     },
   ];
 
@@ -149,6 +145,18 @@ export default function Home() {
     { id: 2, time: "11:00 AM", address: "512 Oak St, Modesto, CA" },
     { id: 3, time: "1:30 PM", address: "78 Pine Rd, Stockton, CA" },
   ];
+
+  // parent variants
+  const gridVariants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.12 } },
+  };
+
+  // each card swings in
+  const cardVariants = {
+    hidden: { opacity: 0, rotate: -10, y: 30 },
+    visible: { opacity: 1, rotate: 0, y: 0 },
+  };
 
   return (
     <>
@@ -159,47 +167,26 @@ export default function Home() {
       >
         Welcome back, Drew 👋
       </Greeting>
-      <StatsBar
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: {},
-          visible: {
-            transition: {
-              staggerChildren: 0.1,
-            },
-          },
-        }}
-      >
-        {stats.map((s, i) => (
-          <StatCard
-            key={s.label}
-            onClick={s.onClick}
-            variants={{
-              hidden: { opacity: 0, y: 10 },
-              visible: { opacity: 1, y: 0 },
-            }}
-            transition={{ duration: 0.4, delay: i * 0.1 }}
-          >
+
+      <StatsBar initial="hidden" animate="visible" variants={gridVariants}>
+        {stats.map((s) => (
+          <StatCard key={s.label} onClick={s.onClick} variants={cardVariants}>
             <StatValue>{s.value}</StatValue>
             <StatLabel>{s.label}</StatLabel>
           </StatCard>
         ))}
       </StatsBar>
 
-      <Grid>
+      <Grid initial="hidden" animate="visible" variants={gridVariants}>
         {cards.map((c) => {
           const Icon = c.icon;
           return (
             <WidgetCard
               key={c.label}
-              disabled={c.disabled}
-              onClick={() => !c.disabled && c.onClick()}
+              onClick={() => c.onClick?.()}
+              variants={cardVariants}
               whileHover={c.disabled ? {} : { scale: 1.02 }}
               whileTap={c.disabled ? {} : { scale: 0.98 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
             >
               <IconCircle>
                 <Icon size={24} color="#fff" />
@@ -209,6 +196,7 @@ export default function Home() {
           );
         })}
       </Grid>
+
       <TodaySchedule jobs={todayJobs} />
     </>
   );

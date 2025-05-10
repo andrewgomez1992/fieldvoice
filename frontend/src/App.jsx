@@ -26,9 +26,9 @@ const Container = styled.div`
 
 const theme = {
   colors: {
-    primary: "#2B6CB0",
+    primary: "#2d2d72",
     primaryDark: "#1A4362",
-    secondary: "#38A169",
+    secondary: "#657cbd",
     textPrimary: "#2D3748",
     textSecondary: "#718096",
     backgroundAlt: "#ffffff",
@@ -37,6 +37,8 @@ const theme = {
     border: "#CBD5E0",
   },
 };
+
+// yellow #fccc28
 
 const App = () => (
   <ThemeProvider theme={theme}>
@@ -60,7 +62,7 @@ const App = () => (
         />
 
         <Route
-          path="/report"
+          path="/cause-and-origin"
           element={
             <>
               <NavBar />
