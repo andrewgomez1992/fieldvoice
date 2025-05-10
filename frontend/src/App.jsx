@@ -9,7 +9,7 @@ import ReportsView from "./components/reports/ReportsView";
 const GlobalStyle = createGlobalStyle`
   body {
     font-family: Arial, sans-serif;
-    background-color: #f0f4f8;
+    background-color:rgb(234, 239, 245);
     margin: 0;
   }
 `;

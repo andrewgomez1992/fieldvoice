@@ -126,4 +126,4 @@ const PreviewCard = ({ data, highlightKey, $borderColor }) => {
   );
 };
 
-export default PreviewCard;
+export default React.memo(PreviewCard);

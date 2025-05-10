@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import PreviewCard from "../reports/PreviewCard";
 
 const Wrapper = styled.div`
@@ -42,8 +42,17 @@ const ItemDate = styled.div`
   color: ${({ theme }) => theme.colors.primaryDark};
 `;
 
-const ToggleIcon = styled.div`
+const ToggleIcon = styled(ChevronDown)`
   color: ${({ theme }) => theme.colors.primary};
+  transition: transform 0.2s;
+  ${({ open }) => open && `transform: rotate(-180deg);`}
+`;
+
+// Collapsible body container: always mounted, instantly toggles height
+const ItemBody = styled.div`
+  max-height: ${({ open }) => (open ? "2000px" : "0")};
+  overflow: hidden;
+  transition: max-height 0ms;
 `;
 
 export default function ReportsView() {
@@ -57,6 +66,7 @@ export default function ReportsView() {
   return (
     <Wrapper>
       <Title>Your Saved Reports</Title>
+
       {reports.length === 0 ? (
         <p>No reports yet. Click “Cause & Origin Report” to create one.</p>
       ) : (
@@ -67,18 +77,16 @@ export default function ReportsView() {
               <ItemCard key={id}>
                 <ItemHeader onClick={() => setOpenId(isOpen ? null : id)}>
                   <ItemDate>{new Date(timestamp).toLocaleString()}</ItemDate>
-                  <ToggleIcon>
-                    {isOpen ? <ChevronUp /> : <ChevronDown />}
-                  </ToggleIcon>
+                  <ToggleIcon open={isOpen} size={20} />
                 </ItemHeader>
 
-                {isOpen && (
+                <ItemBody open={isOpen}>
                   <PreviewCard
                     data={data}
                     highlightKey={null}
                     $borderColor="transparent"
                   />
-                )}
+                </ItemBody>
               </ItemCard>
             );
           })}

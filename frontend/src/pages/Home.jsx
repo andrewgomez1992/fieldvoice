@@ -3,33 +3,30 @@ import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FileText, Clock, Lock } from "lucide-react";
+import { FileText, Bot, Lock } from "lucide-react";
+import TodaySchedule from "../schedule/TodaySchedule";
 
-const Greeting = styled.h2`
+const Greeting = styled(motion.h2)`
   font-size: 1.5rem;
   margin-bottom: 24px;
   text-align: center;
   color: ${({ theme }) => theme.colors.primaryDark};
 `;
 
-const StatsBar = styled.div`
+const StatsBar = styled(motion.div)`
   display: flex;
   gap: 16px;
   margin-bottom: 20px;
 `;
 
-const StatCard = styled.div`
+const StatCard = styled(motion.div)`
   flex: 1;
   background: ${({ theme }) => theme.colors.backgroundCard};
   padding: 16px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   text-align: center;
-  transition: transform 0.2s;
-
-  &:hover {
-    transform: translateY(-4px);
-  }
+  cursor: pointer;
 `;
 
 const StatValue = styled.div`
@@ -121,32 +118,68 @@ export default function Home() {
       onClick: () => navigate("/cause-and-origin"),
     },
     {
-      label: "Clock In",
-      icon: Clock,
+      label: "Another Report",
+      icon: FileText,
       onClick: () => navigate("/clock"),
     },
     {
-      label: "Coming Soon",
+      label: "Incident Report",
+      icon: FileText,
+      // disabled: true,
+    },
+    {
+      label: "WaterBot AI",
+      icon: Bot,
+      // disabled: true,
+    },
+    {
+      label: "Call The Office",
       icon: Lock,
-      disabled: true,
+      // disabled: true,
     },
     {
       label: "Coming Soon",
       icon: Lock,
-      disabled: true,
+      // disabled: true,
     },
+  ];
+
+  const todayJobs = [
+    { id: 1, time: "9:00 AM", address: "2234 Burton Way, Lodi, CA" },
+    { id: 2, time: "11:00 AM", address: "512 Oak St, Modesto, CA" },
+    { id: 3, time: "1:30 PM", address: "78 Pine Rd, Stockton, CA" },
   ];
 
   return (
     <>
-      <Greeting>Welcome back, Drew 👋</Greeting>
-
-      <StatsBar>
-        {stats.map((s) => (
+      <Greeting
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        Welcome back, Drew 👋
+      </Greeting>
+      <StatsBar
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: {},
+          visible: {
+            transition: {
+              staggerChildren: 0.1,
+            },
+          },
+        }}
+      >
+        {stats.map((s, i) => (
           <StatCard
             key={s.label}
             onClick={s.onClick}
-            style={{ cursor: s.onClick ? "pointer" : "default" }}
+            variants={{
+              hidden: { opacity: 0, y: 10 },
+              visible: { opacity: 1, y: 0 },
+            }}
+            transition={{ duration: 0.4, delay: i * 0.1 }}
           >
             <StatValue>{s.value}</StatValue>
             <StatLabel>{s.label}</StatLabel>
@@ -176,6 +209,7 @@ export default function Home() {
           );
         })}
       </Grid>
+      <TodaySchedule jobs={todayJobs} />
     </>
   );
 }
