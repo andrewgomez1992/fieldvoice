@@ -1,4 +1,3 @@
-// src/components/TodaySchedule.jsx
 import React from "react";
 import styled from "styled-components";
 import { ArrowRightCircle } from "lucide-react";
@@ -9,7 +8,7 @@ const ScheduleWidget = styled(motion.div)`
   position: relative;
   margin-top: 20px;
   background: ${({ theme }) => theme.colors.backgroundCard};
-  border-radius: 12px;
+  border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 `;
 
@@ -18,8 +17,8 @@ const Header = styled.div`
   color: white;
   padding: 12px 16px;
   font-weight: 600;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 `;
 
 const List = styled(motion.div)`
@@ -51,22 +50,6 @@ const Time = styled.span`
 const Address = styled.span`
   font-size: 0.75rem;
   color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-const AddButton = styled(motion.button)`
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
-  background: ${({ theme }) => theme.colors.secondary};
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 24px;
-  line-height: 0;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 `;
 
 const containerVariants = {
@@ -114,15 +97,6 @@ export default function TodaySchedule({ jobs }) {
           </JobItem>
         ))}
       </List>
-
-      <AddButton
-        variants={itemVariants}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => navigate("/report")}
-      >
-        +
-      </AddButton>
     </ScheduleWidget>
   );
 }

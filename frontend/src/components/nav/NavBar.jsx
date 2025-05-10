@@ -1,28 +1,45 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
+import Notifications from "../notifications/Notifications";
 
 const Nav = styled.nav`
-  width: 100%;
-  height: 56px;
+  position: sticky;
+  top: 0;
   background: ${({ theme }) => theme.colors.primary};
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   padding: 0 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: 56px;
+  z-index: 10;
 `;
 
 const Title = styled.h1`
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   color: white;
-  font-weight: 600;
+  flex: 1;
+  text-align: center;
 `;
 
-const NavBar = () => (
-  <Nav>
-    <Title>City Water Conservation</Title>
-  </Nav>
-);
+const BellContainer = styled.div`
+  position: absolute;
+  right: 16px;
+`;
 
-export default NavBar;
+export default function NavBar() {
+  // sample notifications
+  const [notifications] = useState([
+    { id: 1, message: "New high‑priority job assigned", time: "2m ago" },
+    { id: 2, message: "Report “Burton Way” completed", time: "1h ago" },
+  ]);
+
+  return (
+    <Nav>
+      <Title>City Water Conservation</Title>
+      <BellContainer>
+        <Notifications notifications={notifications} />
+      </BellContainer>
+    </Nav>
+  );
+}
