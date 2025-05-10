@@ -34,7 +34,7 @@ const Panel = styled(motion.div)`
   right: 0;
   width: 280px;
   background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   z-index: 20;

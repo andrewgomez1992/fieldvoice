@@ -8,7 +8,7 @@ const ScheduleWidget = styled(motion.div)`
   position: relative;
   margin-top: 20px;
   background: ${({ theme }) => theme.colors.backgroundCard};
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 `;
 
@@ -17,8 +17,8 @@ const Header = styled.div`
   color: white;
   padding: 12px 16px;
   font-weight: 600;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
 `;
 
 const List = styled(motion.div)`

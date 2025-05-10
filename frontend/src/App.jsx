@@ -35,10 +35,9 @@ const theme = {
     backgroundCard: "#F7FAFC",
     backgroundCardDisabled: "#E2E8F0",
     border: "#CBD5E0",
+    yellowText: "#fccc28",
   },
 };
-
-// yellow #fccc28
 
 const App = () => (
   <ThemeProvider theme={theme}>

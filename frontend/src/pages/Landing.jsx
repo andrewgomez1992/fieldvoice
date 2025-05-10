@@ -22,7 +22,7 @@ const Container = styled.div`
 const Card = styled(motion.div)`
   background: white;
   padding: 48px 32px;
-  border-radius: 12px;
+  border-radius: 4px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   width: 320px;
   text-align: center;
@@ -49,7 +49,7 @@ const Form = styled.form`
 const Input = styled.input`
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 1rem;
 
   &:focus {
@@ -64,7 +64,7 @@ const Button = styled.button`
   background: ${({ theme }) => theme.colors.primary};
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;

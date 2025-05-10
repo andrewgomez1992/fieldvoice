@@ -13,7 +13,7 @@ const WizardContainer = styled.div`
   position: relative;
   max-width: 800px;
   background: ${({ theme }) => theme.colors.backgroundAlt};
-  border-radius: 12px;
+  border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 24px;
   display: flex;
@@ -58,7 +58,7 @@ const ControlButton = styled.button`
     primary ? theme.colors.primary : "transparent"};
   color: ${({ primary, theme }) => (primary ? "#fff" : theme.colors.primary)};
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   transition: background 0.2s;
   &:hover {

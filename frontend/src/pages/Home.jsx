@@ -22,9 +22,9 @@ const StatsBar = styled(motion.div)`
 
 const StatCard = styled(motion.div)`
   flex: 1;
-  background: ${({ theme }) => theme.colors.backgroundCard};
+  background: ${({ theme }) => theme.colors.primary};
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   text-align: center;
   cursor: pointer;
@@ -33,12 +33,12 @@ const StatCard = styled(motion.div)`
 const StatValue = styled.div`
   font-size: 1rem;
   font-weight: bold;
-  color: ${({ theme }) => theme.colors.primaryDark};
+  color: ${({ theme }) => theme.colors.yellowText};
 `;
 
 const StatLabel = styled.div`
-  font-size: 0.675rem;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 0.775rem;
+  color: #fff;
   margin-top: 4px;
 `;
 
@@ -56,7 +56,7 @@ const WidgetCard = styled(motion.div)`
     disabled
       ? theme.colors.backgroundCardDisabled
       : theme.colors.backgroundCard};
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
   height: 160px;
@@ -107,8 +107,8 @@ export default function Home() {
       label: "Reports",
       onClick: () => navigate("/view-reports"),
     },
-    { value: "3 weeks", label: "Avg. Duration" },
-    { value: "Pipe Leak", label: "Top Cause" },
+    { value: "3", label: "Todays Jobs" },
+    { value: "42", label: "Total Jobs Done" },
   ];
 
   const cards = [
@@ -135,7 +135,7 @@ export default function Home() {
       icon: Lock,
     },
     {
-      label: "Coming Soon",
+      label: "View All Reports",
       icon: Lock,
     },
   ];
