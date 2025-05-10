@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 const Wrapper = styled.div`
   flex: 1;
@@ -15,6 +15,7 @@ const Card = styled.div`
   background: white;
   padding: 16px;
   border-radius: 8px;
+  border: 2px solid ${({ $borderColor }) => $borderColor || "transparent"};
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-size: 0.775rem;
   line-height: 1.4;
@@ -39,14 +40,15 @@ const TitleRight = styled.div`
   text-align: right;
 `;
 
-// Highlighted variants
+// Highlighted date
 const HighlightedTitleRight = styled(TitleRight)`
   border-bottom: 2px solid ${({ theme }) => theme.colors.primary};
 `;
 
-const Body = styled.div`
-  display: flex;
-  flex-direction: column;
+// shared highlight style for labels/paragraphs
+const highlightStyle = css`
+  border-left: 4px solid ${({ theme }) => theme.colors.primary};
+  padding-left: 8px;
 `;
 
 const Label = styled.div`
@@ -54,31 +56,23 @@ const Label = styled.div`
   font-size: 1rem;
   margin-top: 16px;
   margin-bottom: 12px;
-`;
-
-const HighlightedLabel = styled(Label)`
-  border-left: 4px solid ${({ theme }) => theme.colors.primary};
-  padding-left: 8px;
+  ${({ $highlight }) => $highlight && highlightStyle}
 `;
 
 const Paragraph = styled.p`
   margin: 0 0 16px;
   line-height: 1.4;
+  ${({ $highlight }) => $highlight && highlightStyle}
 `;
 
-const HighlightedParagraph = styled(Paragraph)`
-  border-left: 4px solid ${({ theme }) => theme.colors.primary};
-  padding-left: 8px;
-`;
-
-const PreviewCard = ({ data, highlightKey }) => {
+const PreviewCard = ({ data, highlightKey, $borderColor }) => {
   const { author, date, location, area, desc, cause, duration, moisture } =
     data || {};
 
   return (
     <Wrapper>
       {author && <AuthorHeader>Prepared by: {author}</AuthorHeader>}
-      <Card>
+      <Card $borderColor={$borderColor}>
         <HeaderBar>
           <TitleLeft>Cause & Origin Report</TitleLeft>
           <TitleCenter>City Water Conservation</TitleCenter>
@@ -90,87 +84,43 @@ const PreviewCard = ({ data, highlightKey }) => {
             <TitleRight>{date || "YYYY-MM-DD"}</TitleRight>
           )}
         </HeaderBar>
-        <Body>
-          {/* Location */}
-          {highlightKey === "location" ? (
-            <HighlightedLabel>
-              Location: {location || "[Location]"}
-            </HighlightedLabel>
-          ) : (
-            <Label>Location: {location || "[Location]"}</Label>
-          )}
-          <Paragraph>
-            The insured granted me access upon arrival and I obtained verbal
-            authorization to perform my inspection. They stated there was water
-            damage to the {area || "[Area]"}. I found water damage to the areas
-            pictured and found moisture and thermal readings present.
-          </Paragraph>
 
-          {/* Area of Concern */}
-          {highlightKey === "area" ? (
-            <HighlightedLabel>
-              Area of Concern ({area || "[Area]"})
-            </HighlightedLabel>
-          ) : (
-            <Label>Area of Concern ({area || "[Area]"})</Label>
-          )}
-          {highlightKey === "desc" ? (
-            <HighlightedParagraph>
-              {desc || "[Description]"}
-            </HighlightedParagraph>
-          ) : (
-            <Paragraph>{desc || "[Description]"}</Paragraph>
-          )}
+        <Label $highlight={highlightKey === "location"}>
+          Location: {location || "[Location]"}
+        </Label>
+        <Paragraph>
+          The insured granted me access upon arrival and I obtained verbal
+          authorization to perform my inspection. They stated there was water
+          damage to the {area || "[Area]"}. I found water damage to the areas
+          pictured and found moisture and thermal readings present.
+        </Paragraph>
 
-          {/* Cause */}
-          {highlightKey === "cause" ? (
-            <HighlightedLabel>Area of Concern Cause</HighlightedLabel>
-          ) : (
-            <Label>Area of Concern Cause</Label>
-          )}
-          {highlightKey === "cause" ? (
-            <HighlightedParagraph>
-              The cause of the leak appears to be {cause || "[Cause]"}.
-            </HighlightedParagraph>
-          ) : (
-            <Paragraph>
-              The cause of the leak appears to be {cause || "[Cause]"}.
-            </Paragraph>
-          )}
+        <Label $highlight={highlightKey === "area"}>
+          Area of Concern ({area || "[Area]"})
+        </Label>
+        <Paragraph $highlight={highlightKey === "desc"}>
+          {desc || "[Description]"}
+        </Paragraph>
 
-          {/* Duration */}
-          {highlightKey === "duration" ? (
-            <HighlightedLabel>Area of Concern Duration</HighlightedLabel>
-          ) : (
-            <Label>Area of Concern Duration</Label>
-          )}
-          {highlightKey === "duration" ? (
-            <HighlightedParagraph>
-              The duration of the leak appears to be {duration || "[Duration]"}{" "}
-              based on the extent of the damage to the affected building
-              materials.
-            </HighlightedParagraph>
-          ) : (
-            <Paragraph>
-              The duration of the leak appears to be {duration || "[Duration]"}{" "}
-              based on the extent of the damage to the affected building
-              materials.
-            </Paragraph>
-          )}
+        <Label $highlight={highlightKey === "cause"}>
+          Area of Concern Cause
+        </Label>
+        <Paragraph $highlight={highlightKey === "cause"}>
+          The cause of the leak appears to be {cause || "[Cause]"}.
+        </Paragraph>
 
-          {/* Moisture */}
-          {highlightKey === "moisture" ? (
-            <HighlightedParagraph>
-              After testing I used the moisture meter and found{" "}
-              {moisture || "[Moisture]"}.
-            </HighlightedParagraph>
-          ) : (
-            <Paragraph>
-              After testing I used the moisture meter and found{" "}
-              {moisture || "[Moisture]"}.
-            </Paragraph>
-          )}
-        </Body>
+        <Label $highlight={highlightKey === "duration"}>
+          Area of Concern Duration
+        </Label>
+        <Paragraph $highlight={highlightKey === "duration"}>
+          The duration of the leak appears to be {duration || "[Duration]"}{" "}
+          based on the extent of the damage to the affected building materials.
+        </Paragraph>
+
+        <Paragraph $highlight={highlightKey === "moisture"}>
+          After testing I used the moisture meter and found{" "}
+          {moisture || "[Moisture]"}.
+        </Paragraph>
       </Card>
     </Wrapper>
   );

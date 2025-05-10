@@ -10,6 +10,7 @@ import { steps } from "./steps";
 import { runReportWizard } from "../chat/ChatModel";
 
 const WizardContainer = styled.div`
+  position: relative;
   max-width: 800px;
   background: ${({ theme }) => theme.colors.backgroundAlt};
   border-radius: 12px;
@@ -70,7 +71,6 @@ const ControlButton = styled.button`
   }
 `;
 
-// Animation variants
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
@@ -78,20 +78,48 @@ const cardVariants = {
 
 export const ReportWizard = () => {
   const { watch, setValue } = useForm();
+  const [started, setStarted] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentField, setCurrentField] = useState(null);
   const navigate = useNavigate();
   const data = watch();
 
+  // Which fields must be filled?
+  const requiredFields = [
+    "author",
+    "date",
+    "location",
+    "area",
+    "desc",
+    "cause",
+    "duration",
+    "moisture",
+  ];
+  const hasMissing = requiredFields.some(
+    (k) => !data[k] || String(data[k]).trim() === ""
+  );
+
+  // Compute borderColor only—PreviewCard handles the actual drawing
+  let borderColor = "transparent";
+  if (started && !completed) borderColor = "orange";
+  else if (completed && hasMissing) borderColor = "red";
+  else if (completed && !hasMissing) borderColor = "green";
+
   const handleStart = async () => {
+    setStarted(true);
     setIsLoading(true);
     try {
       await runReportWizard(steps, setValue, {
         onStep: (key) => setCurrentField(key),
-        onListening: () => {}, // if i wire up mic indicator later
+        onListening: () => {},
       });
+
+      // slight pause so they notice the color flip
+      await new Promise((r) => setTimeout(r, 200));
       setCompleted(true);
+    } catch (err) {
+      console.error("ReportWizard error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -107,18 +135,20 @@ export const ReportWizard = () => {
               {isLoading ? "Working…" : "Start Report"}
             </ControlButton>
 
-            {/* Always show the preview card, but fade it while loading */}
             <AnimatePresence>
               <motion.div
-                key="preview-initial"
+                key="preview-running"
                 variants={cardVariants}
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
                 transition={{ duration: 0.4 }}
-                style={{ opacity: isLoading ? 0.5 : 1 }}
               >
-                <PreviewCard data={data} highlightKey={currentField} />
+                <PreviewCard
+                  data={data}
+                  highlightKey={currentField}
+                  $borderColor={borderColor}
+                />
               </motion.div>
             </AnimatePresence>
 
@@ -135,7 +165,11 @@ export const ReportWizard = () => {
                 exit="hidden"
                 transition={{ duration: 0.4 }}
               >
-                <PreviewCard data={data} />
+                <PreviewCard
+                  data={data}
+                  highlightKey={null}
+                  $borderColor={borderColor}
+                />
               </motion.div>
             </AnimatePresence>
 
