@@ -39,6 +39,11 @@ const TitleRight = styled.div`
   text-align: right;
 `;
 
+// Highlighted variants
+const HighlightedTitleRight = styled(TitleRight)`
+  border-bottom: 2px solid ${({ theme }) => theme.colors.primary};
+`;
+
 const Body = styled.div`
   display: flex;
   flex-direction: column;
@@ -51,12 +56,22 @@ const Label = styled.div`
   margin-bottom: 12px;
 `;
 
+const HighlightedLabel = styled(Label)`
+  border-left: 4px solid ${({ theme }) => theme.colors.primary};
+  padding-left: 8px;
+`;
+
 const Paragraph = styled.p`
   margin: 0 0 16px;
   line-height: 1.4;
 `;
 
-const PreviewCard = ({ data }) => {
+const HighlightedParagraph = styled(Paragraph)`
+  border-left: 4px solid ${({ theme }) => theme.colors.primary};
+  padding-left: 8px;
+`;
+
+const PreviewCard = ({ data, highlightKey }) => {
   const { author, date, location, area, desc, cause, duration, moisture } =
     data || {};
 
@@ -67,33 +82,94 @@ const PreviewCard = ({ data }) => {
         <HeaderBar>
           <TitleLeft>Cause & Origin Report</TitleLeft>
           <TitleCenter>City Water Conservation</TitleCenter>
-          <TitleRight>{date || "YYYY-MM-DD"}</TitleRight>
+          {highlightKey === "date" ? (
+            <HighlightedTitleRight>
+              {date || "YYYY-MM-DD"}
+            </HighlightedTitleRight>
+          ) : (
+            <TitleRight>{date || "YYYY-MM-DD"}</TitleRight>
+          )}
         </HeaderBar>
         <Body>
-          <Label>Location: {location || "[Location]"}</Label>
+          {/* Location */}
+          {highlightKey === "location" ? (
+            <HighlightedLabel>
+              Location: {location || "[Location]"}
+            </HighlightedLabel>
+          ) : (
+            <Label>Location: {location || "[Location]"}</Label>
+          )}
           <Paragraph>
             The insured granted me access upon arrival and I obtained verbal
             authorization to perform my inspection. They stated there was water
-            damage to the master bedroom and bathroom. I found water damage to
-            the areas pictured. I found moisture and thermal readings present in
-            the areas pictured and labeled.
+            damage to the {area || "[Area]"}. I found water damage to the areas
+            pictured and found moisture and thermal readings present.
           </Paragraph>
-          <Label>Area of Concern ({area || "[Area]"})</Label>
-          <Paragraph>{desc || "[Description]"}</Paragraph>
-          <Label>Area of Concern Cause</Label>
-          <Paragraph>{cause || "[Cause]"}</Paragraph>
-          <Label>Area of Concern Duration</Label>
-          <Paragraph>{duration || "[Duration]"}</Paragraph>
-          <Paragraph>
-            All estimated times of duration are based on hands on experience.
-            There may be hidden damages at the time of inspection associated to
-            the leak that could impact the estimated duration/cause of the
-            damage once uncovered.
-          </Paragraph>
-          <Paragraph>
-            After testing I used the moisture meter and found{" "}
-            {moisture || "[Moisture]"}.
-          </Paragraph>
+
+          {/* Area of Concern */}
+          {highlightKey === "area" ? (
+            <HighlightedLabel>
+              Area of Concern ({area || "[Area]"})
+            </HighlightedLabel>
+          ) : (
+            <Label>Area of Concern ({area || "[Area]"})</Label>
+          )}
+          {highlightKey === "desc" ? (
+            <HighlightedParagraph>
+              {desc || "[Description]"}
+            </HighlightedParagraph>
+          ) : (
+            <Paragraph>{desc || "[Description]"}</Paragraph>
+          )}
+
+          {/* Cause */}
+          {highlightKey === "cause" ? (
+            <HighlightedLabel>Area of Concern Cause</HighlightedLabel>
+          ) : (
+            <Label>Area of Concern Cause</Label>
+          )}
+          {highlightKey === "cause" ? (
+            <HighlightedParagraph>
+              The cause of the leak appears to be {cause || "[Cause]"}.
+            </HighlightedParagraph>
+          ) : (
+            <Paragraph>
+              The cause of the leak appears to be {cause || "[Cause]"}.
+            </Paragraph>
+          )}
+
+          {/* Duration */}
+          {highlightKey === "duration" ? (
+            <HighlightedLabel>Area of Concern Duration</HighlightedLabel>
+          ) : (
+            <Label>Area of Concern Duration</Label>
+          )}
+          {highlightKey === "duration" ? (
+            <HighlightedParagraph>
+              The duration of the leak appears to be {duration || "[Duration]"}{" "}
+              based on the extent of the damage to the affected building
+              materials.
+            </HighlightedParagraph>
+          ) : (
+            <Paragraph>
+              The duration of the leak appears to be {duration || "[Duration]"}{" "}
+              based on the extent of the damage to the affected building
+              materials.
+            </Paragraph>
+          )}
+
+          {/* Moisture */}
+          {highlightKey === "moisture" ? (
+            <HighlightedParagraph>
+              After testing I used the moisture meter and found{" "}
+              {moisture || "[Moisture]"}.
+            </HighlightedParagraph>
+          ) : (
+            <Paragraph>
+              After testing I used the moisture meter and found{" "}
+              {moisture || "[Moisture]"}.
+            </Paragraph>
+          )}
         </Body>
       </Card>
     </Wrapper>
