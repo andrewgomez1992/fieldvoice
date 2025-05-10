@@ -4,6 +4,7 @@ import styled, { createGlobalStyle, ThemeProvider } from "styled-components";
 import NavBar from "./components/nav/NavBar";
 import Home from "./pages/Home";
 import ReportWizard from "./components/reports/ReportWizard";
+import ReportsView from "./components/reports/ReportsView";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -42,7 +43,8 @@ const App = () => {
         <Container>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/report" element={<ReportWizard />} />
+            <Route path="/cause-and-origin" element={<ReportWizard />} />
+            <Route path="/view-reports" element={<ReportsView />} />
           </Routes>
         </Container>
       </BrowserRouter>

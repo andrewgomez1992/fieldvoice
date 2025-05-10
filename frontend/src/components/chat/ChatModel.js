@@ -80,6 +80,12 @@ function formatDateISO(d = new Date()) {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+function saveReport(id, timestamp, data) {
+  const stored = JSON.parse(localStorage.getItem("reports") || "[]");
+  stored.unshift({ id, timestamp, data });
+  localStorage.setItem("reports", JSON.stringify(stored));
+}
+
 async function refine(text, type) {
   const prompt =
     type === "cause"
@@ -289,5 +295,7 @@ export async function runReportWizard(
 
   // 10) Done
   await speakReal("All set! Your report is complete.");
-  return generateReport(data);
+  const final = generateReport(data);
+  saveReport(Date.now(), new Date().toISOString(), data);
+  return final;
 }

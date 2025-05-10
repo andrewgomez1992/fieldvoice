@@ -2,17 +2,21 @@ import React from "react";
 import styled from "styled-components";
 
 const Nav = styled.nav`
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: 56px;
+  background: ${({ theme }) => theme.colors.primary};
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 16px;
+  justify-content: center;
+  padding: 0 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
-const Title = styled.h2`
+const Title = styled.h1`
   margin: 0;
   font-size: 1.25rem;
+  color: white;
+  font-weight: 600;
 `;
 
 const NavBar = () => (
