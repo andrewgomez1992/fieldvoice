@@ -2,9 +2,9 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import chatRoutes from "./src/routes/chat.js";
-import ttsRoutes from "./src/routes/tts.js";
-import { errorHandler } from "./src/middleware/errorHandler.js";
+import chatRoutes from "./routes/chat.js";
+import ttsRoutes from "./routes/tts.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 
 dotenv.config();
 
