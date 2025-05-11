@@ -182,6 +182,11 @@ export async function runReportWizard(
   onListening(true);
   data.author = await listenOnce();
   onListening(false);
+
+  // fix common STT mis‑hearings:
+  // if it captured “Boland” (or any case variation), force it to “Bolin”
+  data.author = data.author.replace(/\bBoland\b/gi, "Bolin");
+
   setValue("author", data.author);
   const firstName = data.author.split(" ")[0];
 
