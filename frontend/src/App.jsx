@@ -7,8 +7,6 @@ import Home from "./pages/Home";
 import ReportWizard from "./components/reports/ReportWizard";
 import ReportsView from "./components/reports/ReportsView";
 
-// push test
-
 const GlobalStyle = createGlobalStyle`
   body {
     font-family: Arial, sans-serif;
