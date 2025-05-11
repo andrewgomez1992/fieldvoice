@@ -6,13 +6,14 @@
       "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
     },
-    {
-      "src": "api/*.js",
-      "use": "@vercel/node"
-    }
+    { "src": "api/chat.js", "use": "@vercel/node" },
+    { "src": "api/tts.js", "use": "@vercel/node" },
+    { "src": "api/health.js", "use": "@vercel/node" }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1.js" },
+    { "src": "/api/chat", "dest": "api/chat.js" },
+    { "src": "/api/tts", "dest": "api/tts.js" },
+    { "src": "/api/health", "dest": "api/health.js" },
     { "src": "/(.*)", "dest": "frontend/dist/$1" }
   ]
 }
