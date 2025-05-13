@@ -48,8 +48,9 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
-      <ScrollToTop />
+
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           {/* Landing at root */}
           <Route path="/" element={<Landing />} />
