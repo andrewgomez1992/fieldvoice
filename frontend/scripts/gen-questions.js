@@ -11,13 +11,13 @@ const polly = new AWS.Polly({ apiVersion: "2016-06-10" });
 // Your eight static prompts
 const qa = [
   "Who's filling out this report?",
-  "What is the Date?.",
-  "What is the Location?",
-  "What is the Area of Concern label?",
-  "Give me the Area of Concern description",
-  "What is the Area of Concern Cause?",
-  "What is the Area of Concern Duration?",
-  "Finally, what did the moisture meter read?",
+  "What's the date?",
+  "Location?",
+  "What's the Area of Concern?",
+  "And a description?",
+  "What about the cause?",
+  "Duration?",
+  "What did the moisture meter read?",
 ];
 
 async function gen() {
