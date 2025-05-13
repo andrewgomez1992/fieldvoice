@@ -7,7 +7,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "",
 });
 export async function chat(history) {
-  const { data } = await api.post("/api/chat", { history });
+  // MAKE SURE /api is here or in url in env
+  const { data } = await api.post("/chat", { history });
   return data.reply;
 }
 
