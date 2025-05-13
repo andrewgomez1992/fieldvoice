@@ -8,12 +8,12 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export default async function handler(req, res) {
-  await cors(req, res);
-  if (req.method !== "POST") return res.status(405).end();
-  const { history } = req.body;
+export default async function handler(request, response) {
+  await cors(request, response);
+  if (request.method !== "POST") return response.status(405).end();
+  const { history } = request.body;
   if (!Array.isArray(history)) {
-    return res.status(400).json({ error: "history must be an array" });
+    return response.status(400).json({ error: "history must be an array" });
   }
   const completion = await openai.chat.completions.create({
     model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
@@ -21,5 +21,5 @@ export default async function handler(req, res) {
     temperature: 0.7,
   });
   const reply = completion.choices[0]?.message?.content.trim() || "";
-  res.json({ reply });
+  response.json({ reply });
 }
