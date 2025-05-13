@@ -10,10 +10,8 @@
       "use": "@vercel/node"
     }
   ],
-
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1.js" },
     { "src": "/(.*)", "dest": "frontend/$1" }
-  ],
-  "ignore": ["backend/**"]
+  ]
 }
