@@ -15,12 +15,31 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 // ─── TTS ──────────────────────────────────────────────────────────
 async function speakReal(text) {
-  // 1) Resume if suspended
+  // Static prompts with pre-generated Polly MP3s
+  const qaPrompts = [
+    "Who's filling out this report?",
+    "What's is the Date?",
+    "What's the location'",
+    "What's the Area of Concern?",
+    "And the description?",
+    "What is the Area of Concern Cause?",
+    "What about the duration",
+    "What about the moisture meter?",
+  ];
+  const idx = qaPrompts.indexOf(text);
+  if (idx >= 0) {
+    // Play static MP3 for this question
+    const audio = new Audio(`/questions/${idx}.mp3`);
+    audio.playsInline = true;
+    await audio.play();
+    return;
+  }
+
+  // Fallback: dynamic Polly fetch and Web Audio playback
   if (audioCtx.state === "suspended") {
     await audioCtx.resume();
   }
 
-  // 2) Fetch Polly MP3
   const resp = await fetch("/api/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -28,17 +47,14 @@ async function speakReal(text) {
   });
   if (!resp.ok) throw new Error("TTS request failed");
 
-  // 3) Decode audio data
   const arrayBuffer = await resp.arrayBuffer();
   const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
 
-  // 4) Play via Web Audio API
   const src = audioCtx.createBufferSource();
   src.buffer = audioBuffer;
   src.connect(audioCtx.destination);
   src.start();
 
-  // 5) Wait until finished
   await new Promise((resolve) => {
     src.onended = resolve;
   });
