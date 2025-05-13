@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import microCors from "micro-cors";
 import AWS from "aws-sdk";
 
