@@ -7,7 +7,7 @@ import citywaterLogo from "../assets/citywater.png";
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
   background: ${({ theme }) =>
     `linear-gradient(
        135deg,

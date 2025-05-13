@@ -42,8 +42,20 @@ const theme = {
 
 const App = () => {
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
+    const setVh = () => {
+      // 1vh = 1% of the viewport height
+      document.documentElement.style.setProperty(
+        "--vh",
+        `${window.innerHeight * 0.01}px`
+      );
+    };
+
+    // set at startup…
+    setVh();
+    // …and update on resize/orientation change
+    window.addEventListener("resize", setVh);
+    return () => window.removeEventListener("resize", setVh);
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
