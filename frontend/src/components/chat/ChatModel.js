@@ -13,23 +13,17 @@ export async function chat(history) {
 }
 
 // ─── TTS ──────────────────────────────────────────────────────────
+// Updated to use Web Speech API for inline mobile playback
 async function speakReal(text) {
-  const resp = await fetch("/api/tts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
-  if (!resp.ok) throw new Error("TTS request failed");
-  const blob = await resp.blob();
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-
-  await new Promise((resolve) => {
-    audio.onended = () => {
-      URL.revokeObjectURL(url);
-      resolve();
-    };
-    audio.play();
+  return new Promise((resolve) => {
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "en-US";
+    utter.rate = 1;
+    utter.pitch = 1;
+    utter.volume = 1;
+    utter.onend = resolve;
+    utter.onerror = resolve; // avoid blocking on errors
+    window.speechSynthesis.speak(utter);
   });
 }
 
@@ -99,7 +93,6 @@ async function refine(text, type) {
     { role: "system", content: "You are a concise summarizer." },
     { role: "user", content: prompt },
   ]);
-  // Force lowercase first letter and strip trailing period
   let s = summary.trim().replace(/\.$/, "");
   s = s.charAt(0).toLowerCase() + s.slice(1);
   return s;
@@ -107,14 +100,12 @@ async function refine(text, type) {
 
 function normalizeMoisture(text) {
   let t = text.trim().replace(/\.$/, "");
-  // if they didn’t say “reading(s)”, tack it on
   if (!/reading(s)?$/i.test(t)) {
     t = `${t} readings`;
   }
   return t;
 }
 
-// ─── desc formatter (unchanged) ───────────────────────────────────
 async function refineDesc(rawDesc, area) {
   const prompt = `
 You are a professional technical writer. Convert the user's description into this exact three‑sentence template.  
