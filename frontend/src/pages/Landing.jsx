@@ -5,15 +5,19 @@ import { useNavigate } from "react-router-dom";
 import citywaterLogo from "../assets/citywater.png";
 
 const Container = styled.div`
-  position: relative;
-  height: 100vh;
-  /* 50/50 diagonal split */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   background: ${({ theme }) =>
     `linear-gradient(
        135deg,
        ${theme.colors.primary} 50%,
        ${theme.colors.backgroundAlt} 50%
-     )`};
+    )`};
+`;
+
+const Main = styled.div`
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,7 +30,7 @@ const Card = styled(motion.div)`
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   width: 320px;
   text-align: center;
-  z-index: 1; /* sit above the footer */
+  z-index: 1;
 `;
 
 const Logo = styled.img`
@@ -78,10 +82,7 @@ const Button = styled.button`
 `;
 
 const Footer = styled.footer`
-  position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  padding: 16px 0;
   text-align: center;
 
   p {
@@ -103,31 +104,33 @@ export default function Landing() {
 
   return (
     <Container>
-      <Card
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-      >
-        <Logo src={citywaterLogo} alt="City Water Conservation" />
-        <Title>Sign In</Title>
-        <Form onSubmit={handleSubmit}>
-          <Input
-            type="text"
-            placeholder="Username"
-            value={username}
-            required
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <Input
-            type="password"
-            placeholder="Password"
-            value={password}
-            required
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button type="submit">Log In</Button>
-        </Form>
-      </Card>
+      <Main>
+        <Card
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          <Logo src={citywaterLogo} alt="City Water Conservation" />
+          <Title>Sign In</Title>
+          <Form onSubmit={handleSubmit}>
+            <Input
+              type="text"
+              placeholder="Username"
+              value={username}
+              required
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={password}
+              required
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button type="submit">Log In</Button>
+          </Form>
+        </Card>
+      </Main>
 
       <Footer>
         <p>
