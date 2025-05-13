@@ -1,7 +1,5 @@
 import axios from "axios";
 
-// push test
-
 // low‑level ChatGPT call
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "",
@@ -12,18 +10,37 @@ export async function chat(history) {
   return data.reply;
 }
 
+// Unlock and resume AudioContext for inline playback
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
 // ─── TTS ──────────────────────────────────────────────────────────
-// Updated to use Web Speech API for inline mobile playback
 async function speakReal(text) {
-  return new Promise((resolve) => {
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = "en-US";
-    utter.rate = 1;
-    utter.pitch = 1;
-    utter.volume = 1;
-    utter.onend = resolve;
-    utter.onerror = resolve; // avoid blocking on errors
-    window.speechSynthesis.speak(utter);
+  // 1) Resume if suspended
+  if (audioCtx.state === "suspended") {
+    await audioCtx.resume();
+  }
+
+  // 2) Fetch Polly MP3
+  const resp = await fetch("/api/tts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  if (!resp.ok) throw new Error("TTS request failed");
+
+  // 3) Decode audio data
+  const arrayBuffer = await resp.arrayBuffer();
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+  // 4) Play via Web Audio API
+  const src = audioCtx.createBufferSource();
+  src.buffer = audioBuffer;
+  src.connect(audioCtx.destination);
+  src.start();
+
+  // 5) Wait until finished
+  await new Promise((resolve) => {
+    src.onended = resolve;
   });
 }
 
@@ -124,8 +141,7 @@ Please fill in {damage_location} and {leak_description} from the user descriptio
   return output.trim();
 }
 
-// ─── Report template ───────────────────────────────────────────────
-function generateReport({
+export function generateReport({
   author,
   date,
   location,
@@ -172,7 +188,7 @@ export async function runReportWizard(
 
   // 1) Name
   onStep("author");
-  await speakReal("Hey! Who's filling out this report today?");
+  await speakReal("Hey! Who's filling out this report?");
   onListening(true);
   data.author = await listenOnce();
   onListening(false);
