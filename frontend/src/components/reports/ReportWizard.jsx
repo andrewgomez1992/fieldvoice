@@ -111,9 +111,14 @@ export const ReportWizard = () => {
   async function unlockAudio() {
     if (audioCtx.state === "suspended") {
       await audioCtx.resume();
+      // play 1ms of silence
+      const buffer = audioCtx.createBuffer(1, 1, 22050);
+      const src = audioCtx.createBufferSource();
+      src.buffer = buffer;
+      src.connect(audioCtx.destination);
+      src.start();
     }
   }
-
   const handleStart = async () => {
     await unlockAudio();
 
