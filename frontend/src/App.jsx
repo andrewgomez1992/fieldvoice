@@ -1,5 +1,10 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import styled, { createGlobalStyle, ThemeProvider } from "styled-components";
 import NavBar from "./components/nav/NavBar";
 import Landing from "./pages/Landing";
@@ -61,7 +66,7 @@ const App = () => {
     <ThemeProvider theme={theme}>
       <GlobalStyle />
 
-      <BrowserRouter>
+      <Router>
         <ScrollToTop />
         <Routes>
           {/* Landing at root */}
@@ -107,7 +112,7 @@ const App = () => {
           {/* Catch-all redirect back to landing */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
+      </Router>
     </ThemeProvider>
   );
 };
