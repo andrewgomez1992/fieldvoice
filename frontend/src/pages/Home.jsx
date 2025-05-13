@@ -13,7 +13,6 @@ const Greeting = styled(motion.h2)`
   color: ${({ theme }) => theme.colors.primaryDark};
 `;
 
-// stats bar stays the same
 const StatsBar = styled(motion.div)`
   display: flex;
   gap: 16px;
@@ -42,7 +41,6 @@ const StatLabel = styled.div`
   margin-top: 4px;
 `;
 
-// make Grid a motion container
 const Grid = styled(motion.div)`
   width: 100%;
   display: grid;
@@ -107,7 +105,7 @@ export default function Home() {
       label: "Reports",
       onClick: () => navigate("/view-reports"),
     },
-    { value: "3", label: "Todays Jobs" },
+    { value: "3", label: "Today's Jobs" },
     { value: "42", label: "Total Jobs Done" },
   ];
 
@@ -116,27 +114,34 @@ export default function Home() {
       label: "Cause & Origin Report",
       icon: FileText,
       onClick: () => navigate("/cause-and-origin"),
+      disabled: false,
     },
     {
       label: "Another Report",
       icon: FileText,
       onClick: () => navigate("/clock"),
+      disabled: true,
     },
     {
       label: "Incident Report",
       icon: FileText,
+      disabled: true,
     },
     {
       label: "WaterBot AI",
       icon: Bot,
+      disabled: true,
     },
     {
       label: "Call The Office",
       icon: Lock,
+      disabled: true,
     },
     {
       label: "View All Reports",
       icon: Lock,
+      onClick: () => navigate("/view-reports"),
+      // disabled: true,
     },
   ];
 
@@ -146,13 +151,11 @@ export default function Home() {
     { id: 3, time: "1:30 PM", address: "78 Pine Rd, Stockton, CA" },
   ];
 
-  // parent variants
   const gridVariants = {
     hidden: {},
     visible: { transition: { staggerChildren: 0.12 } },
   };
 
-  // each card swings in
   const cardVariants = {
     hidden: { opacity: 0, rotate: -10, y: 30 },
     visible: { opacity: 1, rotate: 0, y: 0 },
@@ -181,7 +184,14 @@ export default function Home() {
         {cards.map((c) => {
           const Icon = c.icon;
           return (
-            <WidgetCard key={c.label} onClick={() => c.onClick?.()}>
+            <WidgetCard
+              key={c.label}
+              disabled={c.disabled}
+              onClick={() => {
+                if (!c.disabled && c.onClick) c.onClick();
+              }}
+              variants={cardVariants}
+            >
               <IconCircle>
                 <Icon size={24} color="#fff" />
               </IconCircle>
