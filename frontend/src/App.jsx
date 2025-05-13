@@ -6,6 +6,7 @@ import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import ReportWizard from "./components/reports/ReportWizard";
 import ReportsView from "./components/reports/ReportsView";
+import ScrollToTop from "./utils/ScrollToTop";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -47,6 +48,7 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
+      <ScrollToTop />
       <BrowserRouter>
         <Routes>
           {/* Landing at root */}
