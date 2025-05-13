@@ -50,7 +50,7 @@ const Grid = styled(motion.div)`
   gap: 20px;
 `;
 
-const WidgetCard = styled(motion.div)`
+const WidgetCard = styled.div`
   width: 100%;
   background: ${({ theme, disabled }) =>
     disabled
@@ -181,13 +181,7 @@ export default function Home() {
         {cards.map((c) => {
           const Icon = c.icon;
           return (
-            <WidgetCard
-              key={c.label}
-              onClick={() => c.onClick?.()}
-              variants={cardVariants}
-              whileHover={c.disabled ? {} : { scale: 1.02 }}
-              whileTap={c.disabled ? {} : { scale: 0.98 }}
-            >
+            <WidgetCard key={c.label} onClick={() => c.onClick?.()}>
               <IconCircle>
                 <Icon size={24} color="#fff" />
               </IconCircle>

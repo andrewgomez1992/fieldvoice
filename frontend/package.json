@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen-questions": "node scripts/gen-questions.js"
   },
   "dependencies": {
     "aws-sdk": "^2.1692.0",
     "axios": "^1.9.0",
+    "dotenv": "^16.5.0",
     "framer-motion": "^12.10.5",
     "lucide-react": "^0.509.0",
     "micro-cors": "^0.1.1",
