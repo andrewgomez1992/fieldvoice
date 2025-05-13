@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import styled, { createGlobalStyle, ThemeProvider } from "styled-components";
 import NavBar from "./components/nav/NavBar";
@@ -39,56 +39,62 @@ const theme = {
   },
 };
 
-const App = () => (
-  <ThemeProvider theme={theme}>
-    <GlobalStyle />
-    <BrowserRouter>
-      <Routes>
-        {/* Landing at root */}
-        <Route path="/" element={<Landing />} />
+const App = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
-        {/* All protected routes live under /home */}
-        <Route
-          path="/home"
-          element={
-            <>
-              <NavBar />
-              <Container>
-                <Home />
-              </Container>
-            </>
-          }
-        />
+  return (
+    <ThemeProvider theme={theme}>
+      <GlobalStyle />
+      <BrowserRouter>
+        <Routes>
+          {/* Landing at root */}
+          <Route path="/" element={<Landing />} />
 
-        <Route
-          path="/cause-and-origin"
-          element={
-            <>
-              <NavBar />
-              <Container>
-                <ReportWizard />
-              </Container>
-            </>
-          }
-        />
+          {/* All protected routes live under /home */}
+          <Route
+            path="/home"
+            element={
+              <>
+                <NavBar />
+                <Container>
+                  <Home />
+                </Container>
+              </>
+            }
+          />
 
-        <Route
-          path="/view-reports"
-          element={
-            <>
-              <NavBar />
-              <Container>
-                <ReportsView />
-              </Container>
-            </>
-          }
-        />
+          <Route
+            path="/cause-and-origin"
+            element={
+              <>
+                <NavBar />
+                <Container>
+                  <ReportWizard />
+                </Container>
+              </>
+            }
+          />
 
-        {/* Catch-all redirect back to landing */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
-  </ThemeProvider>
-);
+          <Route
+            path="/view-reports"
+            element={
+              <>
+                <NavBar />
+                <Container>
+                  <ReportsView />
+                </Container>
+              </>
+            }
+          />
+
+          {/* Catch-all redirect back to landing */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
+};
 
 export default App;
