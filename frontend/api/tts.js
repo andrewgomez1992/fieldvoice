@@ -1,16 +1,22 @@
-import Cors from "cors";
-import initMiddleware from "micro-cors";
+import microCors from "micro-cors";
 import AWS from "aws-sdk";
 
-const cors = initMiddleware(Cors());
+const cors = microCors();
+
 AWS.config.update({ region: process.env.AWS_REGION });
 const polly = new AWS.Polly({ apiVersion: "2016-06-10" });
 
 export default async function handler(req, res) {
   await cors(req, res);
-  if (req.method !== "POST") return res.status(405).end();
+
+  if (req.method !== "POST") {
+    return res.status(405).end();
+  }
   const { text } = req.body;
-  if (!text) return res.status(400).json({ error: "text is required" });
+  if (!text) {
+    return res.status(400).json({ error: "text is required" });
+  }
+
   const { AudioStream } = await polly
     .synthesizeSpeech({
       Text: text,
@@ -20,6 +26,7 @@ export default async function handler(req, res) {
       SampleRate: "24000",
     })
     .promise();
+
   res.setHeader("Content-Type", "audio/mpeg");
   res.send(AudioStream);
 }
