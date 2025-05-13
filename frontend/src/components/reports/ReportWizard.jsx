@@ -106,7 +106,17 @@ export const ReportWizard = () => {
   else if (completed && hasMissing) borderColor = "red";
   else if (completed && !hasMissing) borderColor = "green";
 
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  async function unlockAudio() {
+    if (audioCtx.state === "suspended") {
+      await audioCtx.resume();
+    }
+  }
+
   const handleStart = async () => {
+    await unlockAudio();
+
     setStarted(true);
     setIsLoading(true);
     try {
