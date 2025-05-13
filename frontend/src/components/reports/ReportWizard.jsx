@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -84,6 +84,33 @@ export const ReportWizard = () => {
   const [currentField, setCurrentField] = useState(null);
   const navigate = useNavigate();
   const data = watch();
+  const recognitionRef = useRef(null);
+
+  // 2️⃣ On mount, spin up continuous recognition **before** any TTS fires
+  useEffect(() => {
+    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Rec) return; // bail if unsupported
+
+    const recog = new Rec();
+    recog.continuous = true;
+    recog.interimResults = false;
+    recog.lang = "en-US";
+
+    // Whenever speech arrives, funnel it into your wizard logic.
+    recog.onresult = (e) => {
+      const transcript = e.results[e.results.length - 1][0].transcript.trim();
+      // You can choose to stash it somewhere or forward it into ChatModel,
+      // but at minimum you have the stream live before speakReal() runs.
+      console.log("🔥 Heard before TTS:", transcript);
+    };
+
+    recog.onerror = (err) => console.error("Speech error:", err);
+    recog.start();
+
+    recognitionRef.current = recog;
+
+    return () => recog.stop();
+  }, []);
 
   // Which fields must be filled?
   const requiredFields = [
