@@ -1,17 +1,16 @@
-import { useLayoutEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLayoutEffect } from "react";
+import { useLocation, useNavigationType } from "react-router-dom";
 
 export default function ScrollToTop() {
   const { pathname } = useLocation();
-  const prevPath = useRef(pathname);
+  const navType = useNavigationType(); // "PUSH" | "POP" | "REPLACE"
 
   useLayoutEffect(() => {
-    // only scroll on a *real* route change
-    if (prevPath.current !== pathname) {
+    // only scroll on a real push navigation (clicking links)
+    if (navType === "PUSH") {
       window.scrollTo(0, 0);
-      prevPath.current = pathname;
     }
-  }, [pathname]);
+  }, [pathname, navType]);
 
   return null;
 }
