@@ -7,8 +7,11 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import PreviewCard from "./PreviewCard";
 import SendToSlackButton from "../../slack/SendToSlack";
+import { STEPS as steps } from "./steps";
+import { runReportWizard } from "../../chat/ChatModel";
 
-import { runReportWizard } from "./wizard";
+// Fix implementation with this below
+// import { runReportWizard } from "./wizard";
 
 const WizardContainer = styled.div`
   position: relative;
@@ -77,7 +80,7 @@ const cardVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-export const CauseOrigin = () => {
+const CauseOrigin = () => {
   const { watch, setValue } = useForm();
   const [started, setStarted] = useState(false);
   const [completed, setCompleted] = useState(false);
@@ -109,7 +112,7 @@ export const CauseOrigin = () => {
     return () => recog.stop();
   }, []);
 
-  // Determine border color based on progress/completion
+  // Border coloring logic
   const requiredFields = [
     "author",
     "date",
@@ -128,7 +131,7 @@ export const CauseOrigin = () => {
   else if (completed && hasMissing) borderColor = "red";
   else if (completed && !hasMissing) borderColor = "green";
 
-  // Unlock AudioContext on first interaction
+  // Unlock audio context on first interaction
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   async function unlockAudio() {
     if (audioCtx.state === "suspended") {
@@ -141,20 +144,17 @@ export const CauseOrigin = () => {
     }
   }
 
-  // Start the wizard
+  // Start button handler
   const handleStart = async () => {
     await unlockAudio();
     setStarted(true);
     setIsLoading(true);
 
     try {
-      await runReportWizard(setValue, {
+      await runReportWizard(steps, setValue, {
         onStep: (key) => setCurrentField(key),
         onListening: () => {},
       });
-
-      // brief pause so user sees the border flip
-      await new Promise((r) => setTimeout(r, 200));
       setCompleted(true);
     } catch (err) {
       console.error("ReportWizard error:", err);
@@ -172,14 +172,12 @@ export const CauseOrigin = () => {
             <ControlButton primary onClick={handleStart} disabled={isLoading}>
               {isLoading ? "Working…" : "Start Report"}
             </ControlButton>
-
             <AnimatePresence>
               <motion.div
                 key="preview-running"
                 variants={cardVariants}
                 initial="hidden"
                 animate="visible"
-                exit="hidden"
                 transition={{ duration: 0.4 }}
               >
                 <PreviewCard
@@ -189,7 +187,6 @@ export const CauseOrigin = () => {
                 />
               </motion.div>
             </AnimatePresence>
-
             <BackButton onClick={() => navigate(-1)}>Back</BackButton>
           </>
         ) : (
@@ -200,7 +197,6 @@ export const CauseOrigin = () => {
                 variants={cardVariants}
                 initial="hidden"
                 animate="visible"
-                exit="hidden"
                 transition={{ duration: 0.4 }}
               >
                 <PreviewCard
@@ -210,7 +206,6 @@ export const CauseOrigin = () => {
                 />
               </motion.div>
             </AnimatePresence>
-
             <SendToSlackButton onClick={() => navigate("/")}>
               Send to Slack
             </SendToSlackButton>
