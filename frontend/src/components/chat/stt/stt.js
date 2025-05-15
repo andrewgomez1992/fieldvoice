@@ -39,7 +39,7 @@ export async function listenOnce({ timeout = 20000, attempts = 3 } = {}) {
       return transcript;
     } catch (err) {
       if (i < attempts - 1) {
-        await speak("I didn't catch that. Please repeat.");
+        await speak({ label: "I didn't catch that. Please repeat." });
       } else {
         throw new Error(`Speech input failed: ${err}`);
       }
