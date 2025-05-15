@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FileText, Bot, Lock } from "lucide-react";
-import TodaySchedule from "../schedule/TodaySchedule";
+import TodaySchedule from "../components/schedule/TodaySchedule";
 
 const Greeting = styled(motion.h2)`
   font-size: 1.5rem;
