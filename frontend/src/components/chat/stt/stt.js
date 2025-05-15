@@ -20,10 +20,16 @@ export async function listenOnce({ timeout = 20000, attempts = 3 } = {}) {
 
         r.onresult = (e) => {
           clearTimeout(timer);
+          r.onerror = null;
+          r.onresult = null;
+          r.stop(); // ◀ stop the recognizer on success
           resolve(e.results[0][0].transcript.trim());
         };
         r.onerror = (e) => {
           clearTimeout(timer);
+          r.onerror = null;
+          r.onresult = null;
+          r.stop();
           reject(e.error || "recognition error");
         };
 
