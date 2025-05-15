@@ -1,13 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
+
 import PreviewCard from "./PreviewCard";
 import SendToSlackButton from "../slack/SendToSlack";
-import { steps } from "./steps";
-import { runReportWizard } from "../chat/ChatModel";
+
+import { runReportWizard } from "../chat/wizard";
 
 const WizardContainer = styled.div`
   position: relative;
@@ -84,35 +85,8 @@ export const ReportWizard = () => {
   const [currentField, setCurrentField] = useState(null);
   const navigate = useNavigate();
   const data = watch();
-  const recognitionRef = useRef(null);
 
-  // 2️⃣ On mount, spin up continuous recognition **before** any TTS fires
-  useEffect(() => {
-    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Rec) return; // bail if unsupported
-
-    const recog = new Rec();
-    recog.continuous = true;
-    recog.interimResults = false;
-    recog.lang = "en-US";
-
-    // Whenever speech arrives, funnel it into your wizard logic.
-    recog.onresult = (e) => {
-      const transcript = e.results[e.results.length - 1][0].transcript.trim();
-      // You can choose to stash it somewhere or forward it into ChatModel,
-      // but at minimum you have the stream live before speakReal() runs.
-      console.log("🔥 Heard before TTS:", transcript);
-    };
-
-    recog.onerror = (err) => console.error("Speech error:", err);
-    recog.start();
-
-    recognitionRef.current = recog;
-
-    return () => recog.stop();
-  }, []);
-
-  // Which fields must be filled?
+  // Determine border color based on progress/completion
   const requiredFields = [
     "author",
     "date",
@@ -126,19 +100,16 @@ export const ReportWizard = () => {
   const hasMissing = requiredFields.some(
     (k) => !data[k] || String(data[k]).trim() === ""
   );
-
-  // Compute borderColor only—PreviewCard handles the actual drawing
   let borderColor = "transparent";
   if (started && !completed) borderColor = "orange";
   else if (completed && hasMissing) borderColor = "red";
   else if (completed && !hasMissing) borderColor = "green";
 
+  // Unlock AudioContext on first interaction
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
   async function unlockAudio() {
     if (audioCtx.state === "suspended") {
       await audioCtx.resume();
-      // play 1ms of silence
       const buffer = audioCtx.createBuffer(1, 1, 22050);
       const src = audioCtx.createBufferSource();
       src.buffer = buffer;
@@ -146,18 +117,20 @@ export const ReportWizard = () => {
       src.start();
     }
   }
+
+  // Start the wizard
   const handleStart = async () => {
     await unlockAudio();
-
     setStarted(true);
     setIsLoading(true);
+
     try {
-      await runReportWizard(steps, setValue, {
+      await runReportWizard(setValue, {
         onStep: (key) => setCurrentField(key),
         onListening: () => {},
       });
 
-      // slight pause so they notice the color flip
+      // brief pause so user sees the border flip
       await new Promise((r) => setTimeout(r, 200));
       setCompleted(true);
     } catch (err) {

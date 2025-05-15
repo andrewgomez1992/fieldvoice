@@ -12,7 +12,6 @@ const polly = new AWS.Polly({ apiVersion: "2016-06-10" });
 // Your eight static prompts
 const qa = [
   "Who's filling out this report?",
-  "What's the date?",
   "Location?",
   "What's the Area of Concern?",
   "And a description?",
