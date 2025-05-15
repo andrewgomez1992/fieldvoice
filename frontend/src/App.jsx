@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   HashRouter as Router,
   Routes,
@@ -12,6 +12,7 @@ import CauseOriginWizard from "./components/reports/CauseOrigin/CauseOriginWizar
 import ViewReports from "./pages/ViewReports";
 import ScrollToTop from "./utils/ScrollToTop";
 import MainLayout from "./components/layout/MainLayout";
+import { useViewportHeight } from "./hooks/useViewportHeight";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -37,19 +38,7 @@ const theme = {
 };
 
 const App = () => {
-  useEffect(() => {
-    const setVh = () => {
-      // set --vh custom property to handle mobile viewport units
-      document.documentElement.style.setProperty(
-        "--vh",
-        `${window.innerHeight * 0.01}px`
-      );
-    };
-
-    setVh();
-    window.addEventListener("resize", setVh);
-    return () => window.removeEventListener("resize", setVh);
-  }, []);
+  useViewportHeight();
 
   return (
     <ThemeProvider theme={theme}>
