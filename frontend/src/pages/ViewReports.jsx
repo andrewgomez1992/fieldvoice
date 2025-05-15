@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { ChevronDown } from "lucide-react";
-import PreviewCard from "../reports/PreviewCard";
+import PreviewCard from "../components/reports/CauseOrigin/PreviewCard";
 
 const Wrapper = styled.div`
   max-width: 800px;
@@ -55,7 +55,7 @@ const ItemBody = styled.div`
   transition: max-height 0ms;
 `;
 
-export default function ReportsView() {
+export default function ViewReports() {
   const [reports, setReports] = useState([]);
   const [openId, setOpenId] = useState(null);
 

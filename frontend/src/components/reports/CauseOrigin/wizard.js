@@ -1,14 +1,14 @@
 import { STEPS } from "./steps";
-import { speak as speakStep } from "./speech";
-import { playDynamic } from "./tts";
-import { listenOnce } from "./stt";
+import { speak as speakStep } from "../../chat/tts/speech";
+import { playDynamic } from "../../chat/tts/tts";
+import { listenOnce } from "../../chat/stt/stt";
 import { saveReport, formatReport } from "./reportGenerator";
 import {
   formatDateISO,
   refine,
   normalizeMoisture,
   refineDescription,
-} from "./helpers";
+} from "../../chat/helpers";
 
 /**
  * Main report‑wizard flow.

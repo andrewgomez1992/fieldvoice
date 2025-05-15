@@ -1,4 +1,4 @@
-import { chat } from "../chatApi";
+import { chat } from "../api/chatApi";
 
 /**
  * Convert a raw description into the three‑sentence template.

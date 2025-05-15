@@ -6,9 +6,9 @@ import styled from "styled-components";
 import { motion, AnimatePresence } from "framer-motion";
 
 import PreviewCard from "./PreviewCard";
-import SendToSlackButton from "../slack/SendToSlack";
+import SendToSlackButton from "../../slack/SendToSlack";
 
-import { runReportWizard } from "../chat/wizard";
+import { runReportWizard } from "./wizard";
 
 const WizardContainer = styled.div`
   position: relative;
@@ -77,7 +77,7 @@ const cardVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-export const ReportWizard = () => {
+export const CauseOrigin = () => {
   const { watch, setValue } = useForm();
   const [started, setStarted] = useState(false);
   const [completed, setCompleted] = useState(false);
@@ -199,4 +199,4 @@ export const ReportWizard = () => {
   );
 };
 
-export default ReportWizard;
+export default CauseOrigin;

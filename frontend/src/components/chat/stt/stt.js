@@ -1,4 +1,4 @@
-import { speak } from "./speech";
+import { speak } from "../tts/speech";
 
 export async function listenOnce({ timeout = 20000, attempts = 3 } = {}) {
   for (let i = 0; i < attempts; i++) {

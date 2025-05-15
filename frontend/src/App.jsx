@@ -9,8 +9,8 @@ import styled, { createGlobalStyle, ThemeProvider } from "styled-components";
 import NavBar from "./components/nav/NavBar";
 import Landing from "./pages/Landing";
 import Home from "./pages/Home";
-import ReportWizard from "./components/reports/ReportWizard";
-import ReportsView from "./components/reports/ReportsView";
+import ReportWizard from "./components/reports/CauseOrigin/CauseOriginWizard";
+import ViewReports from "./pages/ViewReports";
 import ScrollToTop from "./utils/ScrollToTop";
 
 const GlobalStyle = createGlobalStyle`
@@ -103,7 +103,7 @@ const App = () => {
               <>
                 <NavBar />
                 <Container>
-                  <ReportsView />
+                  <ViewReports />
                 </Container>
               </>
             }

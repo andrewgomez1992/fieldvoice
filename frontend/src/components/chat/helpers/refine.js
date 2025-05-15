@@ -1,4 +1,4 @@
-import { chat } from "../chatApi";
+import { chat } from "../api/chatApi";
 
 /**
  * Summarize a free‑form answer into a concise phrase.
