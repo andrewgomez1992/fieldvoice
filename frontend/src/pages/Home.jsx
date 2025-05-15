@@ -1,5 +1,5 @@
 /* eslint-disable no-irregular-whitespace */
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -99,19 +99,19 @@ const Label = styled.span`
 export default function Home() {
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   if (navigator.mediaDevices?.getUserMedia) {
-  //     navigator.mediaDevices
-  //       .getUserMedia({ audio: true })
-  //       .then((stream) => {
-  //         // stop the tracks immediately—just needed to grant permission
-  //         stream.getTracks().forEach((t) => t.stop());
-  //       })
-  //       .catch((err) => {
-  //         console.warn("Microphone permission not granted:", err);
-  //       });
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (navigator.mediaDevices?.getUserMedia) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          // stop the tracks immediately—just needed to grant permission
+          stream.getTracks().forEach((t) => t.stop());
+        })
+        .catch((err) => {
+          console.warn("Microphone permission not granted:", err);
+        });
+    }
+  }, []);
 
   const stats = [
     {
