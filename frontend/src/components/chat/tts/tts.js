@@ -20,31 +20,47 @@ export function playStaticPrompt(index) {
 
 /**
  * Generate speech dynamically via TTS endpoint and play it.
- * Uses Axios to fetch the raw MP3 binary (arraybuffer), then decodes
+ * Uses fetch to fetch the raw MP3 binary (arraybuffer), then decodes
  * it into an AudioBuffer for playback via Web Audio API.
- *
- * Note: responseType: "arraybuffer" tells Axios to treat the response
- * as binary data rather than JSON, which is essential for audio playback.
  *
  * @param {string} text  The text to synthesize
  * @returns {Promise<void>}
  */
 export async function playDynamic(text) {
+  // Resume context if suspended
   if (audioCtx.state === "suspended") {
     await audioCtx.resume();
   }
+
+  // Fetch synthesized MP3 as binary
   const resp = await fetch("/api/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text }),
   });
-  if (!resp.ok) throw new Error("TTS request failed");
-  const arrayBuffer = await resp.arrayBuffer();
-  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+  if (!resp.ok) {
+    throw new Error(`TTS request failed: ${resp.status} ${resp.statusText}`);
+  }
 
+  const arrayBuffer = await resp.arrayBuffer();
+
+  // Decode audio data using callback‐based API for mobile compatibility
+  const audioBuffer = await new Promise((resolve, reject) => {
+    audioCtx.decodeAudioData(
+      arrayBuffer,
+      (buffer) => resolve(buffer),
+      (err) => reject(err)
+    );
+  });
+
+  // Play the decoded buffer
   const src = audioCtx.createBufferSource();
   src.buffer = audioBuffer;
   src.connect(audioCtx.destination);
   src.start();
-  await new Promise((r) => (src.onended = r));
+
+  // Wait until playback ends
+  await new Promise((resolve) => {
+    src.onended = resolve;
+  });
 }
