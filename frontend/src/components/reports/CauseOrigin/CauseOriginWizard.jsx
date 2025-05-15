@@ -88,13 +88,13 @@ export const CauseOrigin = () => {
 
   // Ask for mic permission as soon as this screen loads
   useEffect(() => {
-    let streamRef = null;
+    // let streamRef = null;
     if (navigator.mediaDevices?.getUserMedia) {
       navigator.mediaDevices
         .getUserMedia({ audio: true })
         .then((stream) => {
           // Keep a reference so we can stop it later
-          streamRef = stream;
+          // streamRef = stream;
           // immediately stop all tracks so the mic isn't left open
           stream.getTracks().forEach((t) => t.stop());
         })
@@ -104,11 +104,11 @@ export const CauseOrigin = () => {
     }
 
     //Cleanup on unmount: ensure no streams are left open
-    return () => {
-      if (streamRef) {
-        streamRef.getTracks().forEach((t) => t.stop());
-      }
-    };
+    // return () => {
+    //   if (streamRef) {
+    //     streamRef.getTracks().forEach((t) => t.stop());
+    //   }
+    // };
   }, []);
 
   // Determine border color based on progress/completion
