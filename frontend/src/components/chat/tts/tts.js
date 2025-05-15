@@ -1,5 +1,3 @@
-import axios from "axios";
-
 // Unlock and resume AudioContext for dynamic playback
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -32,35 +30,21 @@ export function playStaticPrompt(index) {
  * @returns {Promise<void>}
  */
 export async function playDynamic(text) {
-  // Ensure AudioContext is running (some browsers start suspended)
   if (audioCtx.state === "suspended") {
     await audioCtx.resume();
   }
+  const resp = await fetch("/api/tts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+  });
+  if (!resp.ok) throw new Error("TTS request failed");
+  const arrayBuffer = await resp.arrayBuffer();
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
 
-  // Fetch the synthesized MP3 as raw binary data
-  const resp = await axios.post(
-    "/api/tts",
-    { text },
-    {
-      // Instruct Axios to return an ArrayBuffer, not JSON
-      responseType: "arraybuffer",
-    }
-  );
-  if (resp.status !== 200) {
-    throw new Error("TTS request failed");
-  }
-
-  // Decode the MP3 array buffer into an AudioBuffer
-  const audioBuffer = await audioCtx.decodeAudioData(resp.data);
-
-  // Play the decoded buffer through Web Audio
   const src = audioCtx.createBufferSource();
   src.buffer = audioBuffer;
   src.connect(audioCtx.destination);
   src.start();
-
-  // Wait until playback ends before resolving
-  await new Promise((resolve) => {
-    src.onended = resolve;
-  });
+  await new Promise((r) => (src.onended = r));
 }
