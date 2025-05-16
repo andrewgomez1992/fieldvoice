@@ -1,15 +1,19 @@
 import { audioCtx, playDynamic } from "./tts";
 
 /**
- * Speak any prompt via WebAudio + your /api/tts (Polly) endpoint.
- * This uses the same voice as your MP3s, but never fires a blocked audio.play().
+ * Speak a prompt via the Web Audio API and TTS service.
+ *
+ * @param {{ label: string }} step
+ *   An object containing the text to speak in its `label` property.
+ * @returns {Promise<void>}
+ *   Resolves when playback has finished.
  */
 export async function speak(step) {
-  // Ensure context is running (won’t throw once unlocked up front)
+  // Resume the shared AudioContext if it’s suspended
   if (audioCtx.state === "suspended") {
     await audioCtx.resume();
   }
 
-  // Directly call dynamic TTS
+  // Send the text to the TTS endpoint and play it via Web Audio
   await playDynamic(step.label);
 }
