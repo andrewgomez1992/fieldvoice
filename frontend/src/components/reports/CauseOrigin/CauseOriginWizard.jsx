@@ -1,8 +1,4 @@
-import React, {
-  useEffect,
-  //  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -12,9 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import PreviewCard from "./PreviewCard";
 import SendToSlackButton from "../../slack/SendToSlack";
 import { STEPS } from "./steps";
-// import { runReportWizard } from "../../chat/ChatModel";
 
-// Fix implementation with this below
 import { runReportWizard } from "./wizard";
 import { startRecognition } from "../../chat/stt/stt";
 
@@ -91,7 +85,6 @@ const CauseOrigin = () => {
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentField, setCurrentField] = useState(null);
-  // const recognitionRef = useRef(null);
   const navigate = useNavigate();
   const data = watch();
 

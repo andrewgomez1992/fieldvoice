@@ -1,6 +1,6 @@
 // import axios from "axios";
 
-// // USING THIS TIL BUG IS FIXED FROM SEPARATING FUNTIONALITY
+// Original chat logic before breaking apart.
 
 // // low‑level ChatGPT call
 // const api = axios.create({
