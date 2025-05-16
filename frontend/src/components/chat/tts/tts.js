@@ -1,5 +1,6 @@
 // Unlock and resume AudioContext for dynamic playback
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+export const audioCtx = new (window.AudioContext ||
+  window.webkitAudioContext)();
 
 /**
  * Play a pre‑generated static MP3 prompt by its index.
