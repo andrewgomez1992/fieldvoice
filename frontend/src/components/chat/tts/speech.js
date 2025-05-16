@@ -1,36 +1,15 @@
-import { playStaticPrompt, playDynamic, audioCtx } from "./tts";
+import { audioCtx, playDynamic } from "./tts";
 
 /**
- * Speak a given step’s prompt.
- * 1. Always unlock/resume the shared AudioContext for potential WebAudio fallback.
- * 2. Try the static MP3 (Audio.play()); catch and fallback if blocked.
- * 3. Otherwise, play via dynamic Polly + WebAudio.
- *
- * @param {{ audioIndex?: number, label: string }} step
+ * Speak any prompt via WebAudio + your /api/tts (Polly) endpoint.
+ * This uses the same voice as your MP3s, but never fires a blocked audio.play().
  */
 export async function speak(step) {
-  // 1) ensure WebAudio can play
+  // Ensure context is running (won’t throw once unlocked up front)
   if (audioCtx.state === "suspended") {
-    try {
-      await audioCtx.resume();
-    } catch (err) {
-      console.warn("AudioContext.resume() failed:", err);
-    }
+    await audioCtx.resume();
   }
 
-  // 2) static MP3 first
-  if (step.audioIndex != null) {
-    try {
-      await playStaticPrompt(step.audioIndex);
-      return;
-    } catch (err) {
-      console.warn(
-        `Static prompt #${step.audioIndex} blocked or failed; falling back:`,
-        err
-      );
-    }
-  }
-
-  // 3) fallback to WebAudio dynamic TTS
+  // Directly call dynamic TTS
   await playDynamic(step.label);
 }
