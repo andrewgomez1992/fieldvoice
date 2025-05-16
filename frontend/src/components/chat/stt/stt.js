@@ -3,22 +3,37 @@ let recognition = null;
 const transcriptQueue = [];
 
 /**
- * Initialize the singleton recognizer.
+ * Set up the browser’s SpeechRecognition once and only once.
+ *
+ * - Creates a single SpeechRecognition instance (singleton) so we don’t
+ *   accidentally start multiple recognizers.
+ * - Configures it for continuous listening with finalized results only.
+ * - Pushes each complete transcript into our in‑memory queue.
+ * - Logs any errors that occur during recognition.
  */
 function initRecognition() {
+  // If we already created it, do nothing
   if (recognition) return;
+
+  // Pick the correct constructor for the current browser
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!Rec) throw new Error("SpeechRecognition not supported");
+
+  // Create and configure the recognizer
   recognition = new Rec();
-  recognition.continuous = true;
-  recognition.interimResults = false;
-  recognition.lang = "en-US";
-  recognition.onresult = (e) => {
-    const txt = e.results[e.results.length - 1][0].transcript.trim();
-    transcriptQueue.push(txt);
+  recognition.continuous = true; // keep listening until we explicitly stop
+  recognition.interimResults = false; // only emit final transcripts, not partial ones
+  recognition.lang = "en-US"; // listening language
+
+  // Every time the user finishes speaking, push that transcript into our queue
+  recognition.onresult = (event) => {
+    const lastResult = event.results[event.results.length - 1];
+    const transcript = lastResult[0].transcript.trim();
+    transcriptQueue.push(transcript);
   };
-  recognition.onerror = (e) => {
-    console.error("SpeechRecognition error:", e.error || e);
+
+  recognition.onerror = (event) => {
+    console.error("SpeechRecognition error:", event.error || event);
   };
 }
 

@@ -9,7 +9,12 @@ dotenv.config();
 AWS.config.update({ region: process.env.AWS_REGION });
 const polly = new AWS.Polly({ apiVersion: "2016-06-10" });
 
-// Your eight static prompts
+/* 
+This file runs a script via npm run gen-questions, generates mp3 audio for polly voice, currently not using static mp3
+but keeping as a fallback
+*/
+
+// static prompts
 const qa = [
   "Who's filling out this report?",
   "Location?",

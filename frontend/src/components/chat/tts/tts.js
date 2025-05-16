@@ -8,16 +8,17 @@ export const audioCtx = new (window.AudioContext ||
  *
  * @param {number} index  Index of the MP3 file in /questions (e.g. 0 plays /questions/0.mp3)
  * @returns {Promise<void>}
+ * Currently not using this but keeping as fallback
  */
-export function playStaticPrompt(index) {
-  return new Promise((resolve, reject) => {
-    const audio = new Audio(`/questions/${index}.mp3`);
-    audio.playsInline = true;
-    audio.onended = resolve; // resolve when playback completes
-    audio.onerror = reject; // reject if there's a loading/playback error
-    audio.play().catch(reject); // start playback, catch any immediate errors
-  });
-}
+// export function playStaticPrompt(index) {
+//   return new Promise((resolve, reject) => {
+//     const audio = new Audio(`/questions/${index}.mp3`);
+//     audio.playsInline = true;
+//     audio.onended = resolve; // resolve when playback completes
+//     audio.onerror = reject; // reject if there's a loading/playback error
+//     audio.play().catch(reject); // start playback, catch any immediate errors
+//   });
+// }
 
 /**
  * Generate speech dynamically via TTS endpoint and play it.

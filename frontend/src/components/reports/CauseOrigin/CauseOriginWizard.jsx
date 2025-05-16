@@ -145,10 +145,9 @@ const CauseOrigin = () => {
     }
   }
 
-  // Start button handler
   const handleStart = async () => {
     await unlockAudio();
-    startRecognition(); // START recognition inside the click handler
+    startRecognition();
     setStarted(true);
     setIsLoading(true);
 
