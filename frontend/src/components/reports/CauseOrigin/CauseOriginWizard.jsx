@@ -1,5 +1,6 @@
 import React, {
-  // useEffect, useRef,
+  useEffect,
+  //  useRef,
   useState,
 } from "react";
 import { useForm } from "react-hook-form";
@@ -94,27 +95,19 @@ const CauseOrigin = () => {
   const navigate = useNavigate();
   const data = watch();
 
-  // 2️⃣ On mount, spin up continuous recognition BEFORE any TTS fires
-  // useEffect(() => {
-  //   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  //   if (!Rec) return;
-
-  //   const recog = new Rec();
-  //   recog.continuous = true;
-  //   recog.interimResults = false;
-  //   recog.lang = "en-US";
-
-  //   recog.onresult = (e) => {
-  //     const transcript = e.results[e.results.length - 1][0].transcript.trim();
-  //     console.log("🔥 Heard before TTS:", transcript);
-  //     // optionally buffer transcripts for future use
-  //   };
-  //   recog.onerror = (err) => console.error("Speech error:", err);
-  //   recog.start();
-
-  //   recognitionRef.current = recog;
-  //   return () => recog.stop();
-  // }, []);
+  useEffect(() => {
+    if (navigator.mediaDevices?.getUserMedia) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          // We don't actually need the stream—just immediately stop it
+          stream.getTracks().forEach((t) => t.stop());
+        })
+        .catch((err) => {
+          console.warn("Microphone permission not granted:", err);
+        });
+    }
+  }, []);
 
   // Border coloring logic
   const requiredFields = [
