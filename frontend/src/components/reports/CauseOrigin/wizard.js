@@ -16,23 +16,26 @@ import {
  * @param {function} setValue    from react-hook-form
  * @param {object}   callbacks   { onStep(key), onListening(isListening) }
  */
-export const runReportWizard = async (setValue, { onStep, onListening }) => {
+export async function runReportWizard(
+  steps,
+  setValue,
+  { onStep, onListening }
+) {
   const data = {};
 
   // 1) Author
   onStep("author");
-  await speakStep(STEPS.find((s) => s.key === "author"));
+  await speakStep(steps.find((s) => s.key === "author"));
   onListening(true);
   data.author = await listenOnce();
   onListening(false);
-  // Owners last name is Bolin, AI seems to input Boland. Force to Bolin.
   data.author = data.author.replace(/\bBoland\b/gi, "Bolin");
   setValue("author", data.author);
 
-  // 2) Date confirmation
+  // 2) Date confirmation (not in STEPS)
+  onStep("dateConfirm");
   const today = formatDateISO();
   const firstName = data.author.split(" ")[0];
-  onStep("dateConfirm");
   await playDynamic(
     `Hey ${firstName}, I have the date as ${today}. Is that correct?`
   );
@@ -49,25 +52,31 @@ export const runReportWizard = async (setValue, { onStep, onListening }) => {
   }
   setValue("date", data.date);
 
-  // 3…n) The remaining STEPS (location → moisture)
-  for (const step of STEPS.filter((s) => s.key !== "author")) {
+  // 3…n) Loop through the rest (location → moisture)
+  for (const step of steps.filter((s) => s.key !== "author")) {
     onStep(step.key);
     await speakStep(step);
     onListening(true);
     const raw = await listenOnce();
     onListening(false);
 
-    if (step.key === "desc") {
-      data.desc = await refineDescription(raw, data.area);
-    } else if (step.key === "cause") {
-      data.cause = await refine(raw, "cause");
-    } else if (step.key === "duration") {
-      data.duration = await refine(raw, "duration");
-    } else if (step.key === "moisture") {
-      data.moisture = normalizeMoisture(raw);
-    } else {
-      data[step.key] = raw;
+    switch (step.key) {
+      case "desc":
+        data.desc = await refineDescription(raw, data.area);
+        break;
+      case "cause":
+        data.cause = await refine(raw, "cause");
+        break;
+      case "duration":
+        data.duration = await refine(raw, "duration");
+        break;
+      case "moisture":
+        data.moisture = normalizeMoisture(raw);
+        break;
+      default:
+        data[step.key] = raw;
     }
+
     setValue(step.key, data[step.key]);
   }
 
@@ -76,4 +85,4 @@ export const runReportWizard = async (setValue, { onStep, onListening }) => {
   const reportText = formatReport(data);
   saveReport(Date.now(), new Date().toISOString(), data);
   return reportText;
-};
+}

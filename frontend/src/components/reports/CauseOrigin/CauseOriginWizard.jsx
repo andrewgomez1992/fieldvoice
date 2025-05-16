@@ -7,11 +7,11 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import PreviewCard from "./PreviewCard";
 import SendToSlackButton from "../../slack/SendToSlack";
-import { STEPS as steps } from "./steps";
-import { runReportWizard } from "../../chat/ChatModel";
+import { STEPS } from "./steps";
+// import { runReportWizard } from "../../chat/ChatModel";
 
 // Fix implementation with this below
-// import { runReportWizard } from "./wizard";
+import { runReportWizard } from "./wizard";
 
 const WizardContainer = styled.div`
   position: relative;
@@ -151,9 +151,12 @@ const CauseOrigin = () => {
     setIsLoading(true);
 
     try {
-      await runReportWizard(steps, setValue, {
+      await runReportWizard(STEPS, setValue, {
         onStep: (key) => setCurrentField(key),
-        onListening: () => {},
+        onListening: (isListening) => {
+          // if you want, you can track a mic indicator here
+          console.log("listening?", isListening);
+        },
       });
       setCompleted(true);
     } catch (err) {
