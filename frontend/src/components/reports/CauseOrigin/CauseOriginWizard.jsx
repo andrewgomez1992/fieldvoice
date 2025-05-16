@@ -133,20 +133,20 @@ const CauseOrigin = () => {
   else if (completed && !hasMissing) borderColor = "green";
 
   // Unlock audio context on first interaction
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  async function unlockAudio() {
-    if (audioCtx.state === "suspended") {
-      await audioCtx.resume();
-      const buffer = audioCtx.createBuffer(1, 1, 22050);
-      const src = audioCtx.createBufferSource();
-      src.buffer = buffer;
-      src.connect(audioCtx.destination);
-      src.start();
-    }
-  }
+  // const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // async function unlockAudio() {
+  //   if (audioCtx.state === "suspended") {
+  //     await audioCtx.resume();
+  //     const buffer = audioCtx.createBuffer(1, 1, 22050);
+  //     const src = audioCtx.createBufferSource();
+  //     src.buffer = buffer;
+  //     src.connect(audioCtx.destination);
+  //     src.start();
+  //   }
+  // }
 
   const handleStart = async () => {
-    await unlockAudio();
+    // await unlockAudio();
     startRecognition();
     setStarted(true);
     setIsLoading(true);
