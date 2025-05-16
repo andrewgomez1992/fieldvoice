@@ -12,6 +12,7 @@ import { STEPS } from "./steps";
 
 // Fix implementation with this below
 import { runReportWizard } from "./wizard";
+import { startRecognition } from "../../chat/stt/stt";
 
 const WizardContainer = styled.div`
   position: relative;
@@ -147,6 +148,7 @@ const CauseOrigin = () => {
   // Start button handler
   const handleStart = async () => {
     await unlockAudio();
+    startRecognition(); // START recognition inside the click handler
     setStarted(true);
     setIsLoading(true);
 
@@ -154,7 +156,6 @@ const CauseOrigin = () => {
       await runReportWizard(STEPS, setValue, {
         onStep: (key) => setCurrentField(key),
         onListening: (isListening) => {
-          // if you want, you can track a mic indicator here
           console.log("listening?", isListening);
         },
       });

@@ -13,8 +13,9 @@ import {
 /**
  * Main report‑wizard flow.
  *
- * @param {function} setValue    from react-hook-form
- * @param {object}   callbacks   { onStep(key), onListening(isListening) }
+ * @param {Array}   steps    — pass in your STEPS array here
+ * @param {Function} setValue  from react-hook-form
+ * @param {Object}   callbacks { onStep(key), onListening(isListening) }
  */
 export async function runReportWizard(
   steps,
@@ -24,65 +25,116 @@ export async function runReportWizard(
   const data = {};
 
   // 1) Author
-  onStep("author");
-  await speakStep(steps.find((s) => s.key === "author"));
+  const authorStep = steps.find((s) => s.key === "author");
+  onStep(authorStep.key);
+  await speakStep(authorStep);
   onListening(true);
   data.author = await listenOnce();
   onListening(false);
   data.author = data.author.replace(/\bBoland\b/gi, "Bolin");
   setValue("author", data.author);
 
-  // 2) Date confirmation (not in STEPS)
-  onStep("dateConfirm");
-  const today = formatDateISO();
+  // Grab first name for later
   const firstName = data.author.split(" ")[0];
+
+  // 2) Date confirmation (not in STEPS)
+  onStep("date");
+  const today = formatDateISO();
   await playDynamic(
     `Hey ${firstName}, I have the date as ${today}. Is that correct?`
   );
   onListening(true);
   let ans = await listenOnce();
   onListening(false);
-  if (ans.toLowerCase().includes("yes")) {
-    data.date = today;
-  } else {
-    await playDynamic("Okay, what's the correct date?");
-    onListening(true);
-    data.date = await listenOnce();
-    onListening(false);
-  }
+  data.date = ans.toLowerCase().includes("yes")
+    ? today
+    : await (async () => {
+        await playDynamic("Okay, what's the correct date?");
+        onListening(true);
+        const res = await listenOnce();
+        onListening(false);
+        return res;
+      })();
   setValue("date", data.date);
 
-  // 3…n) Loop through the rest (location → moisture)
-  for (const step of steps.filter((s) => s.key !== "author")) {
-    onStep(step.key);
+  // 3→n) The rest: location → moisture
+  for (const key of [
+    "location",
+    "area",
+    "desc",
+    "cause",
+    "duration",
+    "moisture",
+  ]) {
+    const step = steps.find((s) => s.key === key);
+    onStep(key);
     await speakStep(step);
+    onListening(true);
+
+    // longer timeout for description
+    const raw =
+      key === "desc"
+        ? await listenOnce({ timeout: 20000, attempts: 3 })
+        : await listenOnce();
+    onListening(false);
+
+    // transform raw → data[key]
+    if (key === "desc") {
+      data.desc = await refineDescription(raw, data.area);
+    } else if (key === "cause") {
+      data.cause = await refine(raw, "cause");
+    } else if (key === "duration") {
+      data.duration = await refine(raw, "duration");
+    } else if (key === "moisture") {
+      data.moisture = normalizeMoisture(raw);
+    } else {
+      data[key] = raw;
+    }
+
+    setValue(key, data[key]);
+  }
+
+  // 9) Corrections loop
+  while (true) {
+    await playDynamic(
+      "Would you like to correct any field? Say the field name or 'no'."
+    );
+    const field = (await listenOnce()).toLowerCase();
+    if (field.includes("no")) break;
+
+    const keyMap = {
+      author: "author",
+      date: "date",
+      location: "location",
+      area: "area",
+      cause: "cause",
+      duration: "duration",
+      moisture: "moisture",
+    };
+    const key = keyMap[field];
+    if (!key) {
+      await playDynamic("I didn't understand that field name.");
+      continue;
+    }
+
+    // Re‑prompt with the same STEPS label
+    const correctionStep = steps.find((s) => s.key === key);
+    await speakStep(correctionStep);
     onListening(true);
     const raw = await listenOnce();
     onListening(false);
 
-    switch (step.key) {
-      case "desc":
-        data.desc = await refineDescription(raw, data.area);
-        break;
-      case "cause":
-        data.cause = await refine(raw, "cause");
-        break;
-      case "duration":
-        data.duration = await refine(raw, "duration");
-        break;
-      case "moisture":
-        data.moisture = normalizeMoisture(raw);
-        break;
-      default:
-        data[step.key] = raw;
-    }
+    const val =
+      key === "cause" || key === "duration" ? await refine(raw, key) : raw;
+    data[key] = val;
+    setValue(key, val);
 
-    setValue(step.key, data[step.key]);
+    await playDynamic(`${correctionStep.label} updated.`);
   }
 
-  // Finalize
+  // 10) Done
   await playDynamic("All set! Your report is complete.");
-  const reportText = formatReport(data);
+  const finalText = formatReport(data);
   saveReport(Date.now(), new Date().toISOString(), data);
-  return reportText;
+  return finalText;
 }

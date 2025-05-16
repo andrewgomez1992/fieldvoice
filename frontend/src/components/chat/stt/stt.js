@@ -1,48 +1,52 @@
-import { speak } from "../tts/speech";
+// A single Recognition instance and a transcript queue
+let recognition = null;
+const transcriptQueue = [];
 
-export async function listenOnce({ timeout = 20000, attempts = 3 } = {}) {
-  for (let i = 0; i < attempts; i++) {
-    try {
-      const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!Rec) throw new Error("SpeechRecognition not supported");
-      const r = new Rec();
-      r.lang = "en-US";
-      r.interimResults = false;
-      r.maxAlternatives = 1;
+/**
+ * Initialize the singleton recognizer.
+ */
+function initRecognition() {
+  if (recognition) return;
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Rec) throw new Error("SpeechRecognition not supported");
+  recognition = new Rec();
+  recognition.continuous = true;
+  recognition.interimResults = false;
+  recognition.lang = "en-US";
+  recognition.onresult = (e) => {
+    const txt = e.results[e.results.length - 1][0].transcript.trim();
+    transcriptQueue.push(txt);
+  };
+  recognition.onerror = (e) => {
+    console.error("SpeechRecognition error:", e.error || e);
+  };
+}
 
-      const transcript = await new Promise((resolve, reject) => {
-        const timer = setTimeout(() => {
-          r.onerror = null;
-          r.onresult = null;
-          r.stop();
-          reject("timeout");
-        }, timeout);
+/**
+ * MUST be called from inside a user gesture (e.g. your Start button click).
+ * Starts continuous recognition and fills transcriptQueue.
+ */
+export function startRecognition() {
+  initRecognition();
+  recognition.start();
+}
 
-        r.onresult = (e) => {
-          clearTimeout(timer);
-          r.onerror = null;
-          r.onresult = null;
-          r.stop(); // ◀ stop the recognizer on success
-          resolve(e.results[0][0].transcript.trim());
-        };
-        r.onerror = (e) => {
-          clearTimeout(timer);
-          r.onerror = null;
-          r.onresult = null;
-          r.stop();
-          reject(e.error || "recognition error");
-        };
-
-        r.start();
-      });
-
-      return transcript;
-    } catch (err) {
-      if (i < attempts - 1) {
-        await speak({ label: "I didn't catch that. Please repeat." });
-      } else {
-        throw new Error(`Speech input failed: ${err}`);
+/**
+ * Reads one transcript from the queue. Never calls .start() itself.
+ * @param {object} opts  { timeout } in ms
+ * @returns {Promise<string>}
+ */
+export async function listenOnce({ timeout = 20000 } = {}) {
+  const deadline = Date.now() + timeout;
+  return new Promise((resolve, reject) => {
+    (function poll() {
+      if (transcriptQueue.length > 0) {
+        return resolve(transcriptQueue.shift());
       }
-    }
-  }
+      if (Date.now() > deadline) {
+        return reject(new Error("Speech input timeout"));
+      }
+      setTimeout(poll, 100);
+    })();
+  });
 }
