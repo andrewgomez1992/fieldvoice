@@ -1,4 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  // useEffect, useRef,
+  useState,
+} from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -87,31 +90,31 @@ const CauseOrigin = () => {
   const [completed, setCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentField, setCurrentField] = useState(null);
-  const recognitionRef = useRef(null);
+  // const recognitionRef = useRef(null);
   const navigate = useNavigate();
   const data = watch();
 
   // 2️⃣ On mount, spin up continuous recognition BEFORE any TTS fires
-  useEffect(() => {
-    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!Rec) return;
+  // useEffect(() => {
+  //   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  //   if (!Rec) return;
 
-    const recog = new Rec();
-    recog.continuous = true;
-    recog.interimResults = false;
-    recog.lang = "en-US";
+  //   const recog = new Rec();
+  //   recog.continuous = true;
+  //   recog.interimResults = false;
+  //   recog.lang = "en-US";
 
-    recog.onresult = (e) => {
-      const transcript = e.results[e.results.length - 1][0].transcript.trim();
-      console.log("🔥 Heard before TTS:", transcript);
-      // optionally buffer transcripts for future use
-    };
-    recog.onerror = (err) => console.error("Speech error:", err);
-    recog.start();
+  //   recog.onresult = (e) => {
+  //     const transcript = e.results[e.results.length - 1][0].transcript.trim();
+  //     console.log("🔥 Heard before TTS:", transcript);
+  //     // optionally buffer transcripts for future use
+  //   };
+  //   recog.onerror = (err) => console.error("Speech error:", err);
+  //   recog.start();
 
-    recognitionRef.current = recog;
-    return () => recog.stop();
-  }, []);
+  //   recognitionRef.current = recog;
+  //   return () => recog.stop();
+  // }, []);
 
   // Border coloring logic
   const requiredFields = [
