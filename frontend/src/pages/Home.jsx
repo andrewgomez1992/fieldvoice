@@ -3,8 +3,9 @@ import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FileText, Bot, Lock } from "lucide-react";
+import { FileText } from "lucide-react";
 import TodaySchedule from "../components/schedule/TodaySchedule";
+import templates from "../templates";
 
 const Greeting = styled(motion.h2)`
   font-size: 1.5rem;
@@ -123,39 +124,18 @@ export default function Home() {
     { value: "42", label: "Total Jobs Done" },
   ];
 
+  const templateCards = templates.map((t) => ({
+    label: t.name,
+    icon: FileText,
+    onClick: () => navigate(`/report/${t.id}`),
+  }));
+
   const cards = [
-    {
-      label: "Cause & Origin Report",
-      icon: FileText,
-      onClick: () => navigate("/cause-and-origin"),
-      disabled: false,
-    },
-    {
-      label: "Another Report",
-      icon: FileText,
-      onClick: () => navigate("/clock"),
-      disabled: true,
-    },
-    {
-      label: "Incident Report",
-      icon: FileText,
-      disabled: true,
-    },
-    {
-      label: "WaterBot AI",
-      icon: Bot,
-      disabled: true,
-    },
-    {
-      label: "Call The Office",
-      icon: Lock,
-      disabled: true,
-    },
+    ...templateCards,
     {
       label: "View All Reports",
       icon: FileText,
       onClick: () => navigate("/view-reports"),
-      // disabled: true,
     },
   ];
 
