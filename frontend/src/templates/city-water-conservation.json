@@ -1,0 +1,129 @@
+{
+  "id": "cwc-cause-origin",
+  "name": "Cause & Origin Report",
+  "company": {
+    "name": "City Water Conservation",
+    "logo": "/assets/cwc-logo.png"
+  },
+  "steps": [
+    {
+      "key": "author",
+      "label": "Prepared by",
+      "question": "Who's filling out this report?",
+      "type": "text",
+      "required": true,
+      "section": "General Info"
+    },
+    {
+      "key": "date",
+      "label": "Date",
+      "question": "I have the date as {{today}}. Is that correct?",
+      "type": "date",
+      "required": true,
+      "autoConfirm": true,
+      "section": "General Info"
+    },
+    {
+      "key": "location",
+      "label": "Location",
+      "question": "What's the property address?",
+      "type": "text",
+      "required": true,
+      "section": "General Info"
+    },
+    {
+      "key": "area",
+      "label": "Area of Concern",
+      "question": "What's the area of concern?",
+      "type": "text",
+      "required": true,
+      "section": "Inspection"
+    },
+    {
+      "key": "desc",
+      "label": "Description",
+      "question": "Describe what you found.",
+      "type": "textarea",
+      "required": true,
+      "section": "Inspection",
+      "listenTimeout": 20000,
+      "refine": {
+        "type": "template",
+        "systemPrompt": "You are a precision writer.",
+        "prompt": "You are a technical writer. Convert the user's description into exactly:\nI began by flow testing the nearby {{area}} and found them to be free of any leaks.\nUpon close inspection of the damage I found most of the damage {damage_location}.\nI then flow tested the {{area}} and found a {leak_description}.\nUser description: \"{{raw}}\"\nPlease fill in {damage_location} and {leak_description}."
+      }
+    },
+    {
+      "key": "cause",
+      "label": "Cause",
+      "question": "What's the cause of the damage?",
+      "type": "text",
+      "required": true,
+      "section": "Inspection",
+      "refine": {
+        "type": "summarize",
+        "prompt": "Summarize this as a brief cause phrase: \"{{raw}}\"."
+      }
+    },
+    {
+      "key": "duration",
+      "label": "Duration",
+      "question": "How long has the leak been going on?",
+      "type": "text",
+      "required": true,
+      "section": "Inspection",
+      "refine": {
+        "type": "summarize",
+        "prompt": "Summarize this as a concise duration phrase: \"{{raw}}\"."
+      }
+    },
+    {
+      "key": "moisture",
+      "label": "Moisture Reading",
+      "question": "What did the moisture meter read?",
+      "type": "text",
+      "required": true,
+      "section": "Inspection",
+      "normalize": {
+        "type": "suffix",
+        "value": "readings"
+      }
+    },
+    {
+      "key": "damage_photos",
+      "label": "Damage Photos",
+      "question": "Take photos of the damage.",
+      "type": "photo",
+      "required": true,
+      "multiple": true,
+      "section": "Documentation"
+    },
+    {
+      "key": "moisture_photos",
+      "label": "Moisture Meter Photos",
+      "question": "Take photos of the moisture meter readings.",
+      "type": "photo",
+      "required": false,
+      "multiple": true,
+      "section": "Documentation"
+    },
+    {
+      "key": "thermal_photos",
+      "label": "Thermal Imaging Photos",
+      "question": "Take any thermal imaging photos.",
+      "type": "photo",
+      "required": false,
+      "multiple": true,
+      "section": "Documentation"
+    },
+    {
+      "key": "inspector_signature",
+      "label": "Inspector Signature",
+      "question": "Sign to confirm your inspection.",
+      "type": "signature",
+      "required": true,
+      "section": "Sign-Off"
+    }
+  ],
+  "outputTemplate": "{{name}}    {{company.name}}    {{date}}\n\nPrepared by: {{author}}\n\nLocation: {{location}}\n\nThe insured granted me access upon arrival and I obtained verbal authorization to perform my inspection. They stated there was water damage to the {{area}}. I found water damage to the areas pictured. I found moisture and thermal readings present in the areas pictured and labeled.\n\nArea of Concern ({{area}})\n\n{{desc}}\n\nArea of Concern Cause\n\nThe cause of the leak appears to be {{cause}}.\n\nArea of Concern Duration\n\nThe duration of the leak appears to be {{duration}} based on the extent of the damage to the affected building materials.\n\nAll estimated times of duration are based on hands on experience. There may be hidden damages at the time of inspection associated to the leak that could impact the estimated duration/cause of the damage once uncovered.\n\nAfter testing I used the moisture meter and found {{moisture}}."
+}
