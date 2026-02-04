@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { ChevronDown } from "lucide-react";
 import PreviewCard from "../components/reports/CauseOrigin/PreviewCard";
+import { getTemplate } from "../templates";
 
 const Wrapper = styled.div`
   max-width: 800px;
@@ -68,11 +69,12 @@ export default function ViewReports() {
       <Title>Your Saved Reports</Title>
 
       {reports.length === 0 ? (
-        <p>No reports yet. Click “Cause & Origin Report” to create one.</p>
+        <p>No reports yet. Start a report from the dashboard to create one.</p>
       ) : (
         <List>
-          {reports.map(({ id, timestamp, data }) => {
+          {reports.map(({ id, timestamp, data, templateId }) => {
             const isOpen = openId === id;
+            const tmpl = getTemplate(templateId);
             return (
               <ItemCard key={id}>
                 <ItemHeader onClick={() => setOpenId(isOpen ? null : id)}>
@@ -83,6 +85,7 @@ export default function ViewReports() {
                 <ItemBody open={isOpen}>
                   <PreviewCard
                     data={data}
+                    template={tmpl}
                     highlightKey={null}
                     $borderColor="transparent"
                   />

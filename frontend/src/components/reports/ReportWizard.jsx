@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 
-import PreviewCard from "./PreviewCard";
-import SendToSlackButton from "../../slack/SendToSlack";
-import template from "../../../templates/city-water-conservation.json";
+import PreviewCard from "./CauseOrigin/PreviewCard";
+import SendToSlackButton from "../slack/SendToSlack";
+import { getTemplate } from "../../templates";
 
-import { runWizard } from "../../../engine/runWizard";
-import { startRecognition } from "../../chat/stt/stt";
+import { runWizard } from "../../engine/runWizard";
+import { startRecognition } from "../chat/stt/stt";
 
 const WizardContainer = styled.div`
   position: relative;
@@ -74,12 +74,22 @@ const ControlButton = styled.button`
   }
 `;
 
+const NotFound = styled.div`
+  text-align: center;
+  padding: 48px 24px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 1.1rem;
+`;
+
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
 };
 
-const CauseOrigin = () => {
+const ReportWizard = () => {
+  const { templateId } = useParams();
+  const template = getTemplate(templateId);
+
   const { watch, setValue } = useForm();
   const [started, setStarted] = useState(false);
   const [completed, setCompleted] = useState(false);
@@ -93,7 +103,6 @@ const CauseOrigin = () => {
       navigator.mediaDevices
         .getUserMedia({ audio: true })
         .then((stream) => {
-          // We don't actually need the stream—just immediately stop it
           stream.getTracks().forEach((t) => t.stop());
         })
         .catch((err) => {
@@ -101,6 +110,20 @@ const CauseOrigin = () => {
         });
     }
   }, []);
+
+  if (!template) {
+    return (
+      <WizardContainer>
+        <NotFound>
+          Template not found.
+          <br />
+          <BackButton onClick={() => navigate("/home")}>
+            Back to Dashboard
+          </BackButton>
+        </NotFound>
+      </WizardContainer>
+    );
+  }
 
   // Border coloring logic — derived from template
   const requiredFields = template.steps
@@ -190,4 +213,4 @@ const CauseOrigin = () => {
   );
 };
 
-export default CauseOrigin;
+export default ReportWizard;

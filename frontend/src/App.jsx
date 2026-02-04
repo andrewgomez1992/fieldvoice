@@ -8,7 +8,7 @@ import {
 import { ThemeProvider, createGlobalStyle } from "styled-components";
 import Landing from "./pages/Landing";
 import Home from "./pages/Home";
-import CauseOriginWizard from "./components/reports/CauseOrigin/CauseOriginWizard";
+import ReportWizard from "./components/reports/ReportWizard";
 import ViewReports from "./pages/ViewReports";
 import ScrollToTop from "./utils/ScrollToTop";
 import MainLayout from "./components/layout/MainLayout";
@@ -52,7 +52,7 @@ const App = () => {
           {/* All protected routes share the same layout */}
           <Route element={<MainLayout />}>
             <Route path="/home" element={<Home />} />
-            <Route path="/cause-and-origin" element={<CauseOriginWizard />} />
+            <Route path="/report/:templateId" element={<ReportWizard />} />
             <Route path="/view-reports" element={<ViewReports />} />
           </Route>
 
