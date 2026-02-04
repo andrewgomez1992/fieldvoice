@@ -7,9 +7,9 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import PreviewCard from "./PreviewCard";
 import SendToSlackButton from "../../slack/SendToSlack";
-import { STEPS } from "./steps";
+import template from "../../../templates/city-water-conservation.json";
 
-import { runReportWizard } from "./wizard";
+import { runWizard } from "../../../engine/runWizard";
 import { startRecognition } from "../../chat/stt/stt";
 
 const WizardContainer = styled.div`
@@ -102,17 +102,10 @@ const CauseOrigin = () => {
     }
   }, []);
 
-  // Border coloring logic
-  const requiredFields = [
-    "author",
-    "date",
-    "location",
-    "area",
-    "desc",
-    "cause",
-    "duration",
-    "moisture",
-  ];
+  // Border coloring logic — derived from template
+  const requiredFields = template.steps
+    .filter((s) => s.required)
+    .map((s) => s.key);
   const hasMissing = requiredFields.some(
     (k) => !data[k] || String(data[k]).trim() === ""
   );
@@ -127,7 +120,7 @@ const CauseOrigin = () => {
     setIsLoading(true);
 
     try {
-      await runReportWizard(STEPS, setValue, {
+      await runWizard(template, setValue, {
         onStep: (key) => setCurrentField(key),
         onListening: (isListening) => {
           console.log("listening?", isListening);
@@ -143,7 +136,7 @@ const CauseOrigin = () => {
 
   return (
     <WizardContainer>
-      <Header>Cause & Origin Report</Header>
+      <Header>{template.name}</Header>
       <FormContainer>
         {!completed ? (
           <>
@@ -160,6 +153,7 @@ const CauseOrigin = () => {
               >
                 <PreviewCard
                   data={data}
+                  template={template}
                   highlightKey={currentField}
                   $borderColor={borderColor}
                 />
@@ -179,6 +173,7 @@ const CauseOrigin = () => {
               >
                 <PreviewCard
                   data={data}
+                  template={template}
                   highlightKey={null}
                   $borderColor={borderColor}
                 />

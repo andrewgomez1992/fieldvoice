@@ -65,7 +65,7 @@ const Paragraph = styled.p`
   ${({ $highlight }) => $highlight && highlightStyle}
 `;
 
-const PreviewCard = ({ data, highlightKey, $borderColor }) => {
+const PreviewCard = ({ data, template, highlightKey, $borderColor }) => {
   const { author, date, location, area, desc, cause, duration, moisture } =
     data || {};
 
@@ -74,8 +74,8 @@ const PreviewCard = ({ data, highlightKey, $borderColor }) => {
       {author && <AuthorHeader>Prepared by: {author}</AuthorHeader>}
       <Card $borderColor={$borderColor}>
         <HeaderBar>
-          <TitleLeft>Cause & Origin Report</TitleLeft>
-          <TitleCenter>City Water Conservation</TitleCenter>
+          <TitleLeft>{template?.name || "Report"}</TitleLeft>
+          <TitleCenter>{template?.company?.name || ""}</TitleCenter>
           {highlightKey === "date" ? (
             <HighlightedTitleRight>
               {date || "YYYY-MM-DD"}
