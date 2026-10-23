@@ -1,76 +1,120 @@
-<h1 align="center">City Water Conservation</h1>
+<div align="center">
 
-**A unified voice‑driven reporting tool to streamline field service workflows.**
+# 💧 FieldVoice
 
-This monorepo contains both the front‑end (React + Vite) and back‑end (Node.js + Express) for:
+**An AI voice assistant that writes inspection reports for field crews.**
 
-* **Voice‑driven report capture** (via AWS Polly & Web Speech API)
-* **Local persistence** of completed reports
-* **API endpoints** for dynamic TTS and OpenAI summarization
+Inspectors talk through a job on their phone. FieldVoice asks each question out loud, listens to the answer, rewrites it into professional report language with OpenAI, and produces a structured, ready-to-send report. No typing.
+
+![React](https://img.shields.io/badge/React-19-61dafb) ![Vite](https://img.shields.io/badge/Vite-646cff) ![Node.js](https://img.shields.io/badge/Node.js-Express-339933) ![OpenAI](https://img.shields.io/badge/OpenAI-API-412991) ![AWS Polly](https://img.shields.io/badge/AWS-Polly-ff9900) ![Vercel](https://img.shields.io/badge/Deploy-Vercel-000)
+
+<img src="docs/fieldvoice-screens.png" alt="FieldVoice sign-in and dashboard screens" width="720" />
+
+</div>
 
 ---
 
-## Getting Started
+## The problem
 
-1. **Clone the repository** and install dependencies:
+Water-damage inspectors spend their day on site, often with wet hands, gloves on, or climbing around a crawlspace. Typing up a detailed "cause and origin" report on a phone afterward is slow, and details get lost.
 
-   ```bash
-   git clone git@github.com:your-org/city-water-conservation.git
-   cd city-water-conservation
-   npm install
-   ```
+## The solution
 
-2. **Create separate `.env` files** (never commit these) for frontend and backend:
+FieldVoice turns the report into a conversation:
 
-<details>
-<summary><strong>Frontend: <code>frontend/.env</code></strong></summary>
+1. The inspector picks a job from **today's schedule** and starts a report.
+2. The app **asks each question out loud** (AWS Polly text-to-speech) and **listens** for the answer (Web Speech API).
+3. Free-form answers are **refined by OpenAI** into clear, professional wording, while short answers like addresses are **normalized** with simple rules.
+4. The finished report is **formatted from a template** and saved, ready to review.
 
-```dotenv
-# Frontend: VITE API base URL pointing at backend's /api
-VITE_API_BASE_URL=http://localhost:3000/api
+## Highlights
 
-# TTS configuration (for client demos/static fallback)
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=YOUR_AWS_KEY
-AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET
-TTS_VOICE=Joanna
+- **Template-driven report engine.** Every report is defined in JSON: the questions, field types, sections, AI refinement prompts and output layout. Adding a new report type means writing a new template, not new code. See [`frontend/src/templates`](frontend/src/templates) and [`frontend/src/engine`](frontend/src/engine).
+- **Voice wizard.** `runWizard` drives the whole flow step by step: speaking prompts, listening with per-step timeouts, confirming dates ("I have the date as today, is that correct?"), and filling the form as it goes.
+- **Per-step AI refinement.** Each step can declare its own system prompt and output format, so the model rewrites messy speech into consistent, professional report language.
+- **Mobile-first UI.** Built for one-handed phone use in the field, with large tap targets, smooth transitions (Framer Motion), and a viewport fix for mobile browser toolbars.
+- **Two deployment modes.** A standalone Express API for local development, and the same endpoints as **Vercel serverless functions** for production.
+
+## Tech stack
+
+| Layer | Tools |
+| --- | --- |
+| Front end | React 19, Vite, React Router, React Hook Form, Styled Components, Framer Motion |
+| Voice | Web Speech API (speech-to-text), AWS Polly (text-to-speech) |
+| AI | OpenAI Chat Completions |
+| Back end | Node.js, Express (controllers, routes, services, error middleware) |
+| Deploy | Vercel static build plus serverless `/api` functions |
+
+## Architecture
+
+```
+fieldvoice/
+├── frontend/                 # React + Vite single-page app
+│   ├── api/                  # Vercel serverless functions: /api/chat, /api/tts, /api/health
+│   └── src/
+│       ├── engine/           # runWizard, applyRefine, applyNormalize, formatOutput
+│       ├── templates/        # JSON report definitions
+│       ├── components/       # voice (stt/tts), reports, schedule, nav
+│       └── pages/            # Landing, Home, ViewReports
+└── backend/                  # Express API for local development
+    ├── routes/ → controllers/ → services/
+    └── middleware/errorHandler.js
 ```
 
-</details>
+```
+Inspector speaks ─▶ Web Speech API ─▶ runWizard ─▶ applyRefine (OpenAI) / applyNormalize
+                                          │
+        AWS Polly ◀── next question ◀─────┘ ─▶ formatOutput ─▶ saved report
+```
 
-<details>
-<summary><strong>Backend: <code>backend/.env</code></strong></summary>
+## Running it locally
+
+**Requirements:** Node.js 20+, an OpenAI API key, and AWS credentials with Polly access. Use Chrome for speech recognition.
+
+```bash
+# 1. Back end (port 3000)
+cd backend
+npm install
+npm run dev
+
+# 2. Front end (port 5173), in a second terminal
+cd frontend
+npm install
+npm run dev
+```
+
+Then open http://localhost:5173 and allow microphone access. The sign-in screen is a demo login, so any username and password works.
+
+### Environment variables
+
+`backend/.env`
 
 ```dotenv
-# OpenAI integration
-OPENAI_API_KEY=YOUR_OPENAI_KEY
+OPENAI_API_KEY=your-openai-key
 OPENAI_MODEL=gpt-3.5-turbo
-
-# AWS Polly for dynamic TTS
 AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=YOUR_AWS_KEY
-AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET
+AWS_ACCESS_KEY_ID=your-aws-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret
 TTS_VOICE=Joanna
-
-# Express server port
 PORT=3000
 ```
 
-</details>
+`frontend/.env`
 
----
-
-## Architecture Overview
-
-This is a monorepo containing three main folders:
-
-```
-city-water-conservation (root)
-├── backend/              # Express server pre built.
-├── frontend/             # React/Vite single‑page application
-└── frontend/api          # Vercel serverless functions for /api routes, pre deployment of backend
+```dotenv
+VITE_API_BASE_URL=http://localhost:3000/api
 ```
 
-* **backend/** runs on port 3000 in development.
-* **frontend/** runs on port 5173 in development and builds to static assets.
-* **/frontend/api/** hosts `chat.js` and `tts.js` as serverless endpoints under `/api/*`.
+When deploying to Vercel, set the same OpenAI and AWS variables in the project settings so the serverless functions can use them. `.env` files are git-ignored.
+
+## Roadmap
+
+- [ ] Photo capture for damage, moisture and thermal images (already defined in the report template)
+- [ ] Inspector signature pad for sign-off
+- [ ] Export to PDF and send to Slack or email
+- [ ] Real authentication and a hosted database in place of browser storage
+- [ ] Offline mode for jobs with no signal
+
+## Author
+
+Built by **Drew Gomez**, full stack engineer. [drew-gomez.com](https://drew-gomez.com) · [GitHub](https://github.com/andrewgomez1992) · [LinkedIn](https://www.linkedin.com/in/andrewgomez1992)
