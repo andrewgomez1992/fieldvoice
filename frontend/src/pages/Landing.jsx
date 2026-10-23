@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import citywaterLogo from "../assets/citywater.png";
 
 const Container = styled.div`
   display: flex;
@@ -33,9 +32,12 @@ const Card = styled(motion.div)`
   z-index: 1;
 `;
 
-const Logo = styled.img`
-  width: 100px;
+const Logo = styled.div`
   margin-bottom: 24px;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: ${({ theme }) => theme.colors.primaryDark};
 `;
 
 const Title = styled.h1`
@@ -110,7 +112,7 @@ export default function Landing() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
         >
-          <Logo src={citywaterLogo} alt="City Water Conservation" />
+          <Logo>💧 FieldVoice</Logo>
           <Title>Sign In</Title>
           <Form onSubmit={handleSubmit}>
             <Input
@@ -134,7 +136,7 @@ export default function Landing() {
 
       <Footer>
         <p>
-          © {new Date().getFullYear()} City Water Conservation. All rights
+          © {new Date().getFullYear()} FieldVoice. All rights
           reserved.
         </p>
       </Footer>

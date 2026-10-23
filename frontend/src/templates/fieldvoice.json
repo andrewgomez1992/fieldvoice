@@ -2,8 +2,8 @@
   "id": "cwc-cause-origin",
   "name": "Cause & Origin Report",
   "company": {
-    "name": "City Water Conservation",
-    "logo": "/assets/cwc-logo.png"
+    "name": "FieldVoice",
+    "logo": ""
   },
   "steps": [
     {

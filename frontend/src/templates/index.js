@@ -1,6 +1,6 @@
-import cwc from "./city-water-conservation.json";
+import fieldvoice from "./fieldvoice.json";
 
-const templates = [cwc];
+const templates = [fieldvoice];
 
 export default templates;
 
