@@ -4,9 +4,9 @@
 
 **An AI voice assistant that writes inspection reports for field crews.**
 
-Inspectors talk through a job on their phone. FieldVoice asks each question out loud, listens to the answer, rewrites it into professional report language with OpenAI, and produces a structured, ready-to-send report. No typing.
+Inspectors talk through a job on their phone. FieldVoice asks the questions, listens, and turns the answers into a structured, ready-to-send report. No typing, no forms, gloves on.
 
-![React](https://img.shields.io/badge/React-19-61dafb) ![Vite](https://img.shields.io/badge/Vite-646cff) ![Node.js](https://img.shields.io/badge/Node.js-Express-339933) ![OpenAI](https://img.shields.io/badge/OpenAI-API-412991) ![AWS Polly](https://img.shields.io/badge/AWS-Polly-ff9900) ![Vercel](https://img.shields.io/badge/Deploy-Vercel-000)
+![React](https://img.shields.io/badge/React-19-61dafb) ![Vite](https://img.shields.io/badge/Vite-646cff) ![Node.js](https://img.shields.io/badge/Node.js-Express-339933) ![OpenAI Realtime](https://img.shields.io/badge/OpenAI-Realtime%20API-412991) ![WebRTC](https://img.shields.io/badge/WebRTC-speech--to--speech-0b6b70) ![AWS Polly](https://img.shields.io/badge/AWS-Polly-ff9900)
 
 <img src="docs/fieldvoice-screens.png" alt="FieldVoice sign-in and dashboard screens" width="720" />
 
@@ -14,112 +14,80 @@ Inspectors talk through a job on their phone. FieldVoice asks each question out 
 
 ---
 
-## The problem
+## Two engines, one report
 
-Water-damage inspectors spend their day on site, often with wet hands, gloves on, or climbing around a crawlspace. Typing up a detailed "cause and origin" report on a phone afterward is slow, and details get lost.
+A field inspection can run twenty minutes in a loud environment on a phone with one bar. One voice approach doesn't fit every job, so FieldVoice ships two and lets the user switch.
 
-## The solution
+**Realtime** — a live speech-to-speech conversation. The phone opens a WebRTC session directly with OpenAI's realtime model; audio streams both ways while structured events come back over a data channel. The model asks follow-ups, hears the answers, and fills report fields through tool calls as the conversation goes. It feels like talking to a colleague.
 
-FieldVoice turns the report into a conversation:
+**Basic** — a deterministic step-by-step wizard. The app reads each question aloud with AWS Polly, captures the answer, and moves on. Cheaper per report, more predictable, and it degrades better on a bad connection.
 
-1. The inspector picks a job from **today's schedule** and starts a report.
-2. The app **asks each question out loud** (AWS Polly text-to-speech) and **listens** for the answer (Web Speech API).
-3. Free-form answers are **refined by OpenAI** into clear, professional wording, while short answers like addresses are **normalized** with simple rules.
-4. The finished report is **formatted from a template** and saved, ready to review.
+Both engines write into the same template and produce the same report object, so the rest of the app doesn't care which one ran.
 
-## Highlights
+## Decisions worth explaining
 
-- **Template-driven report engine.** Every report is defined in JSON: the questions, field types, sections, AI refinement prompts and output layout. Adding a new report type means writing a new template, not new code. See [`frontend/src/templates`](frontend/src/templates) and [`frontend/src/engine`](frontend/src/engine).
-- **Voice wizard.** `runWizard` drives the whole flow step by step: speaking prompts, listening with per-step timeouts, confirming dates ("I have the date as today, is that correct?"), and filling the form as it goes.
-- **Per-step AI refinement.** Each step can declare its own system prompt and output format, so the model rewrites messy speech into consistent, professional report language.
-- **Mobile-first UI.** Built for one-handed phone use in the field, with large tap targets, smooth transitions (Framer Motion), and a viewport fix for mobile browser toolbars.
-- **Two deployment modes.** A standalone Express API for local development, and the same endpoints as **Vercel serverless functions** for production.
+**The OpenAI key never reaches the browser.** The realtime session needs a credential in the client, so the server mints a short-lived one instead:
 
-## Tech stack
-
-| Layer | Tools |
-| --- | --- |
-| Front end | React 19, Vite, React Router, React Hook Form, Styled Components, Framer Motion |
-| Voice | OpenAI Realtime API (gpt-realtime-2.1 speech-to-speech over WebRTC); basic fallback: Web Speech API + AWS Polly |
-| AI | OpenAI Chat Completions |
-| Back end | Node.js, Express (controllers, routes, services, error middleware) |
-| Deploy | Vercel static build plus serverless `/api` functions |
-
-## Architecture
-
-```
-fieldvoice/
-├── frontend/                 # React + Vite single-page app
-│   ├── api/                  # Vercel serverless functions: /api/chat, /api/tts, /api/health
-│   └── src/
-│       ├── engine/           # runWizard, applyRefine, applyNormalize, formatOutput
-│       ├── templates/        # JSON report definitions
-│       ├── components/       # voice (stt/tts), reports, schedule, nav
-│       └── pages/            # Landing, Home, ViewReports
-└── backend/                  # Express API for local development
-    ├── routes/ → controllers/ → services/
-    └── middleware/errorHandler.js
+```js
+// backend/services/realtimeService.js
+POST https://api.openai.com/v1/realtime/client_secrets
+  expires_after: { anchor: "created_at", seconds: 300 }
 ```
 
-```
-Inspector speaks ─▶ Web Speech API ─▶ runWizard ─▶ applyRefine (OpenAI) / applyNormalize
-                                          │
-        AWS Polly ◀── next question ◀─────┘ ─▶ formatOutput ─▶ saved report
+The browser gets a secret that dies in five minutes. The real key stays on the server. Without this, shipping a realtime voice feature means handing your API key to every phone that loads the page.
+
+**A runaway session can't run up a bill.** Realtime audio is billed per token and a forgotten open mic is expensive, so every session carries a hard cap:
+
+```js
+const MAX_MINUTES = 25;  // safety cap on one session's length (and cost)
 ```
 
-## Running it locally
+**The user watches the meter.** `estimateCost()` reads the token details off each usage event — audio in, text in, cached, audio out, text out — prices them separately, and surfaces a running estimate while the session is live. Cached tokens are priced at their own lower rate rather than lumped in.
 
-**Requirements:** Node.js 20+ and an OpenAI API key with credits. AWS Polly credentials are optional (only used by the basic fallback voice).
+**Mobile audio is its own problem.** iOS only allows audio playback that starts inside a user gesture, so the `<audio>` element is created during the tap that opens the session, not when the stream arrives. The mic requests echo cancellation, noise suppression and auto gain, because a field inspection is not a quiet room.
+
+**Failures are sorted before they're shown.** Quota, billing, bad-key and missing-model errors are classified as fatal and reported plainly. Everything else is treated as a dropped connection the user can retry.
+
+## Report templates are data, not code
+
+Report types live in `frontend/src/templates/fieldvoice.json`. A template defines the fields, the questions to ask, and the order. Adding a new kind of inspection means adding JSON — no new components, no new engine code, and both engines pick it up for free.
+
+## Stack
+
+| | |
+|---|---|
+| Front end | React 19, Vite, mobile-first |
+| Voice (realtime) | OpenAI Realtime API over WebRTC, data channel for events and tool calls |
+| Voice (basic) | AWS Polly (generative engine, neural fallback) for speech, browser speech recognition for capture |
+| Back end | Node.js, Express — ephemeral key minting, TTS proxy, report persistence |
+| Tests | Vitest — `engine/__tests__/engine.test.js`, `engine/__tests__/realtime.test.js` |
+
+## Running it
 
 ```bash
-# 1. Back end (port 3000)
-cd backend
-npm install
-npm run dev
+# backend
+cd backend && npm install && npm run dev
 
-# 2. Front end (port 5173), in a second terminal
-cd frontend
-npm install
-npm run dev
+# frontend
+cd frontend && npm install && npm run dev
 ```
 
-Then open http://localhost:5173 and allow microphone access. The sign-in screen is a demo login, so any username and password works.
+`backend/.env`:
 
-### Environment variables
-
-`backend/.env`
-
-```dotenv
-OPENAI_API_KEY=your-openai-key
-OPENAI_MODEL=gpt-5.6-terra
-# Optional: realtime voice model and voice
-# REALTIME_MODEL=gpt-realtime-2.1        (or gpt-realtime-2.1-mini to save money)
-# REALTIME_VOICE=marin                   (or cedar)
-# Optional: AWS Polly, only for the basic fallback voice
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your-aws-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret
-TTS_VOICE=Joanna
-TTS_ENGINE=generative
-PORT=3000
+```
+OPENAI_API_KEY=        # required - minting realtime secrets and report rewriting
+REALTIME_MODEL=        # default gpt-realtime-2.1  (use -mini for cheaper)
+REALTIME_VOICE=        # default marin
+AWS_REGION=            # required for the basic engine's Polly voice
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+TTS_VOICE=             # default Joanna
+TTS_ENGINE=            # default generative
+PORT=
 ```
 
-`frontend/.env`
+Microphone access requires HTTPS on a real phone. `npm run dev` serves over HTTPS on the LAN for that reason.
 
-```dotenv
-VITE_API_BASE_URL=http://localhost:3000/api
-```
+## Status
 
-When deploying to Vercel, set the same OpenAI and AWS variables in the project settings so the serverless functions can use them. `.env` files are git-ignored.
-
-## Roadmap
-
-- [ ] Photo capture for damage, moisture and thermal images (already defined in the report template)
-- [ ] Inspector signature pad for sign-off
-- [ ] Export to PDF and send to Slack or email
-- [ ] Real authentication and a hosted database in place of browser storage
-- [ ] Offline mode for jobs with no signal
-
-## Author
-
-Built by **Drew Gomez**, full stack engineer. [drew-gomez.com](https://drew-gomez.com) · [GitHub](https://github.com/andrewgomez1992) · [LinkedIn](https://www.linkedin.com/in/andrewgomez1992)
+Working, actively being built. The realtime engine is the default path; the basic engine remains as the cheap and resilient fallback.
