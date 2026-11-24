@@ -86,7 +86,9 @@ TTS_ENGINE=            # default generative
 PORT=
 ```
 
-Microphone access requires HTTPS on a real phone. `npm run dev` serves over HTTPS on the LAN for that reason.
+Copy `backend/.env.example` to `backend/.env` and fill it in.
+
+The microphone needs a secure origin, so `http://localhost:5173` works for development. Testing on a real phone needs HTTPS: either drop a cert pair in `frontend/.certs/` (Vite picks it up automatically) or tunnel the dev server with ngrok.
 
 ## Status
 
