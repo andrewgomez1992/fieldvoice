@@ -101,6 +101,7 @@ export default function Landing() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    localStorage.setItem("userName", username.trim());
     navigate("/home");
   };
 

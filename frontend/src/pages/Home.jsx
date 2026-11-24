@@ -1,11 +1,11 @@
-/* eslint-disable no-irregular-whitespace */
 import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FileText } from "lucide-react";
+import { FileText, Mic, Wand2 } from "lucide-react";
 import TodaySchedule from "../components/schedule/TodaySchedule";
-import templates from "../templates";
+import { listTemplates } from "../templates";
+import { listReports } from "../engine/formatOutput";
 
 const Greeting = styled(motion.h2)`
   font-size: 1.5rem;
@@ -114,28 +114,38 @@ export default function Home() {
   //   }
   // }, []);
 
+  const templates = listTemplates();
+  const reports = listReports();
+  const today = new Date().toDateString();
+  const userName = (localStorage.getItem("userName") || "").split(/\s+/)[0];
+
   const stats = [
     {
-      value: JSON.parse(localStorage.getItem("reports") || "[]").length,
-      label: "Reports",
+      value: reports.filter((r) => new Date(r.timestamp).toDateString() === today).length,
+      label: "Reports Today",
       onClick: () => navigate("/view-reports"),
     },
-    { value: "3", label: "Today's Jobs" },
-    { value: "42", label: "Total Jobs Done" },
+    { value: reports.length, label: "All Reports", onClick: () => navigate("/view-reports") },
+    { value: templates.length, label: "Report Types", onClick: () => navigate("/templates/new") },
   ];
 
   const templateCards = templates.map((t) => ({
-    label: t.name,
-    icon: FileText,
+    label: t.custom ? `${t.name} · ${t.company?.name}` : t.name,
+    icon: Mic,
     onClick: () => navigate(`/report/${t.id}`),
   }));
 
   const cards = [
     ...templateCards,
     {
-      label: "View All Reports",
+      label: "All Reports",
       icon: FileText,
       onClick: () => navigate("/view-reports"),
+    },
+    {
+      label: "Set Up a Company Report",
+      icon: Wand2,
+      onClick: () => navigate("/templates/new"),
     },
   ];
 
@@ -162,7 +172,7 @@ export default function Home() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        Welcome back, Drew 👋
+        {userName ? `Welcome back, ${userName} 👋` : "Welcome back 👋"}
       </Greeting>
 
       <StatsBar initial="hidden" animate="visible" variants={gridVariants}>

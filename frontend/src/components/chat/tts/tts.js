@@ -1,40 +1,24 @@
-// Unlock and resume AudioContext for dynamic playback
+import { setMuted } from "../stt/stt";
+
+// Shared AudioContext. It starts suspended until a user gesture resumes it.
 export const audioCtx = new (window.AudioContext ||
   window.webkitAudioContext)();
 
-/**
- * Play a pre‑generated static MP3 prompt by its index.
- * Resolves when the audio finishes, or rejects on error.
- *
- * @param {number} index  Index of the MP3 file in /questions (e.g. 0 plays /questions/0.mp3)
- * @returns {Promise<void>}
- * Currently not using this but keeping as fallback
- */
-// export function playStaticPrompt(index) {
-//   return new Promise((resolve, reject) => {
-//     const audio = new Audio(`/questions/${index}.mp3`);
-//     audio.playsInline = true;
-//     audio.onended = resolve; // resolve when playback completes
-//     audio.onerror = reject; // reject if there's a loading/playback error
-//     audio.play().catch(reject); // start playback, catch any immediate errors
-//   });
-// }
+let currentSource = null;
+let pollyAvailable = true; // flips to false after a failed /api/tts call
 
-/**
- * Generate speech dynamically via TTS endpoint and play it.
- * Uses fetch to fetch the raw MP3 binary (arraybuffer), then decodes
- * it into an AudioBuffer for playback via Web Audio API.
- *
- * @param {string} text  The text to synthesize
- * @returns {Promise<void>}
- */
-export async function playDynamic(text) {
-  // Resume context if suspended
-  if (audioCtx.state === "suspended") {
-    await audioCtx.resume();
+/** Stop whatever is currently being spoken. */
+export function stopSpeaking() {
+  try {
+    currentSource?.stop();
+  } catch {
+    /* not playing */
   }
+  currentSource = null;
+  window.speechSynthesis?.cancel();
+}
 
-  // Fetch synthesized MP3 as binary
+async function playPolly(text) {
   const resp = await fetch("/api/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -43,26 +27,64 @@ export async function playDynamic(text) {
   if (!resp.ok) {
     throw new Error(`TTS request failed: ${resp.status} ${resp.statusText}`);
   }
-
   const arrayBuffer = await resp.arrayBuffer();
 
-  // Decode audio data using callback‐based API for mobile compatibility
+  // Callback-based decode for older mobile Safari.
   const audioBuffer = await new Promise((resolve, reject) => {
-    audioCtx.decodeAudioData(
-      arrayBuffer,
-      (buffer) => resolve(buffer),
-      (err) => reject(err)
-    );
+    audioCtx.decodeAudioData(arrayBuffer, resolve, reject);
   });
 
-  // Play the decoded buffer
   const src = audioCtx.createBufferSource();
   src.buffer = audioBuffer;
   src.connect(audioCtx.destination);
-  src.start();
-
-  // Wait until playback ends
+  currentSource = src;
   await new Promise((resolve) => {
     src.onended = resolve;
+    src.start();
   });
+  currentSource = null;
+}
+
+/** Built-in browser voice, used if the Polly endpoint is down. */
+function playBrowserVoice(text) {
+  return new Promise((resolve) => {
+    if (!window.speechSynthesis) return resolve();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US";
+    utterance.onend = resolve;
+    utterance.onerror = resolve;
+    window.speechSynthesis.speak(utterance);
+  });
+}
+
+/**
+ * Speak text out loud. Uses AWS Polly through /api/tts, and falls back to
+ * the browser's own voice if that fails, so one bad request never kills
+ * the whole report. The mic ignores input while this is playing.
+ *
+ * @param {string} text
+ * @returns {Promise<void>} resolves when speech has finished
+ */
+export async function playDynamic(text) {
+  if (audioCtx.state === "suspended") {
+    await audioCtx.resume();
+  }
+
+  setMuted(true);
+  try {
+    if (pollyAvailable) {
+      try {
+        await playPolly(text);
+        return;
+      } catch (err) {
+        console.warn("Polly TTS failed, using browser voice instead:", err);
+        pollyAvailable = false;
+      }
+    }
+    await playBrowserVoice(text);
+  } finally {
+    // Short pause so the tail of our own audio isn't picked up by the mic.
+    await new Promise((r) => setTimeout(r, 300));
+    setMuted(false);
+  }
 }

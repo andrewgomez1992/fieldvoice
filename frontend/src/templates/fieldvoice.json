@@ -12,7 +12,8 @@
       "question": "Who's filling out this report?",
       "type": "text",
       "required": true,
-      "section": "General Info"
+      "section": "General Info",
+      "hint": "the inspector's name"
     },
     {
       "key": "date",
@@ -29,7 +30,8 @@
       "question": "What's the property address?",
       "type": "text",
       "required": true,
-      "section": "General Info"
+      "section": "General Info",
+      "hint": "street address of the property"
     },
     {
       "key": "area",
@@ -37,7 +39,8 @@
       "question": "What's the area of concern?",
       "type": "text",
       "required": true,
-      "section": "Inspection"
+      "section": "Inspection",
+      "hint": "the room or fixture with the problem, e.g. 'master bathroom vanity'"
     },
     {
       "key": "desc",
@@ -46,12 +49,13 @@
       "type": "textarea",
       "required": true,
       "section": "Inspection",
-      "listenTimeout": 20000,
+      "listenTimeout": 30000,
       "refine": {
         "type": "template",
-        "systemPrompt": "You are a precision writer.",
-        "prompt": "You are a technical writer. Convert the user's description into exactly:\nI began by flow testing the nearby {{area}} and found them to be free of any leaks.\nUpon close inspection of the damage I found most of the damage {damage_location}.\nI then flow tested the {{area}} and found a {leak_description}.\nUser description: \"{{raw}}\"\nPlease fill in {damage_location} and {leak_description}."
-      }
+        "systemPrompt": "You fill in a company's standard inspection paragraph from an inspector's notes.",
+        "prompt": "Fill in this standard paragraph. Keep every word exactly as written except the parts in <angle brackets>, which you replace using only the inspector's notes. If the notes don't say, write [not stated] there.\n\nI began by flow testing the nearby {{area}} and found them to be free of any leaks.\nUpon close inspection of the damage I found most of the damage <where the damage is>.\nI then flow tested the {{area}} and found a <what the leak is>.\n\nInspector's notes: \"{{raw}}\""
+      },
+      "hint": "what they found: where the damage is and what the leak itself is"
     },
     {
       "key": "cause",
@@ -62,8 +66,9 @@
       "section": "Inspection",
       "refine": {
         "type": "summarize",
-        "prompt": "Summarize this as a brief cause phrase: \"{{raw}}\"."
-      }
+        "prompt": "Rewrite as a short phrase that completes the sentence 'The cause of the leak appears to be ___.' Inspector said: \"{{raw}}\""
+      },
+      "hint": "what caused the leak or damage"
     },
     {
       "key": "duration",
@@ -74,8 +79,9 @@
       "section": "Inspection",
       "refine": {
         "type": "summarize",
-        "prompt": "Summarize this as a concise duration phrase: \"{{raw}}\"."
-      }
+        "prompt": "Rewrite as a short phrase that completes the sentence 'The duration of the leak appears to be ___.' (e.g. 'approximately two to three weeks'). Inspector said: \"{{raw}}\""
+      },
+      "hint": "how long the leak has likely been going on"
     },
     {
       "key": "moisture",
@@ -87,7 +93,8 @@
       "normalize": {
         "type": "suffix",
         "value": "readings"
-      }
+      },
+      "hint": "moisture meter readings, with numbers and locations if given"
     },
     {
       "key": "damage_photos",

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import Notifications from "../notifications/Notifications";
 import MenuButton from "./Menu";
-import templates from "../../templates";
 
 const Nav = styled.nav`
   position: sticky;
@@ -47,7 +46,7 @@ export default function NavBar() {
         <MenuButton />
       </LeftSlot>
 
-      <Title>{templates[0]?.company?.name || "Swift-li"}</Title>
+      <Title>FieldVoice</Title>
 
       <RightSlot>
         <Notifications notifications={notifications} />

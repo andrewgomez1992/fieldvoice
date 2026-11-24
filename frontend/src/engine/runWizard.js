@@ -1,129 +1,80 @@
-import { speak } from "../components/chat/tts/speech";
-import { playDynamic } from "../components/chat/tts/tts";
-import { listenOnce } from "../components/chat/stt/stt";
 import { formatDateISO } from "../components/chat/helpers/formatDateISO";
-import { applyRefine } from "./applyRefine";
-import { applyNormalize } from "./applyNormalize";
-import { formatOutput, saveReport } from "./formatOutput";
+import { createVoice, SKIP, BACK, YES } from "./voiceIO";
+import { fillField } from "./fillField";
+import { reviewLoop } from "./review";
+import { voiceSteps } from "../templates";
+
+export { WizardCancelled } from "./voiceIO";
 
 /**
- * Run a voice-driven report wizard from a template definition.
+ * Interview mode: ask each question in order. Supports "skip", "go back"
+ * and "repeat" voice commands, then a review at the end.
  *
- * @param {Object} template - The template object (from JSON)
- * @param {Function} setValue - react-hook-form setValue
- * @param {Object} callbacks - { onStep(key), onListening(bool) }
- * @returns {Promise<string>} The formatted report text
+ * @param {Object} template
+ * @param {Object} opts
+ *   setField(key, value) - store a value (also updates the UI)
+ *   initialData          - values already known (e.g. address from schedule)
+ *   onStep(key|null), onStatus(status), onSay(text), signal
+ * @returns {Promise<Object>} the collected data
  */
-export async function runWizard(template, setValue, { onStep, onListening }) {
-  const data = {};
-  const voiceSteps = template.steps.filter(
-    (s) => s.type !== "photo" && s.type !== "signature"
-  );
+export async function runWizard(
+  template,
+  { setField, initialData = {}, onStep = () => {}, onStatus, onSay, signal } = {}
+) {
+  const voice = createVoice({ signal, onStatus, onSay });
+  const data = { ...initialData };
+  const set = async (key, value) => {
+    data[key] = value;
+    await setField(key, value);
+  };
+  const steps = voiceSteps(template).filter((s) => !initialData[s.key]);
 
-  for (const step of voiceSteps) {
-    console.log(`[wizard] step: ${step.key} (${step.type})`);
-    onStep(step.key);
-
-    // --- Date with auto-confirm ---
-    if (step.type === "date" && step.autoConfirm) {
-      const today = formatDateISO();
-      const question = step.question.replace("{{today}}", today);
-      await playDynamic(question);
-      onListening(true);
-      const ans = await listenOnce();
-      onListening(false);
-
-      if (ans.toLowerCase().includes("yes")) {
-        data[step.key] = today;
-      } else {
-        await playDynamic("Okay, what's the correct date?");
-        onListening(true);
-        data[step.key] = await listenOnce();
-        onListening(false);
-      }
-      setValue(step.key, data[step.key]);
-      console.log(`[wizard] ${step.key} = "${data[step.key]}"`);
-      continue;
-    }
-
-    // --- Text / textarea / number / select ---
-    await speak({ label: step.question });
-    onListening(true);
-    const timeout = step.listenTimeout || 20000;
-    const raw = await listenOnce({ timeout });
-    onListening(false);
-    console.log(`[wizard] ${step.key} raw = "${raw}"`);
-
-    // Apply AI refinement if configured
-    let value = raw;
-    if (step.refine) {
-      console.log(`[wizard] refining ${step.key}...`);
-      value = await applyRefine(raw, step.refine, data);
-      console.log(`[wizard] ${step.key} refined = "${value}"`);
-    }
-
-    // Apply normalization if configured
-    if (step.normalize) {
-      value = applyNormalize(value, step.normalize);
-    }
-
-    data[step.key] = value;
-    setValue(step.key, value);
-    console.log(`[wizard] ${step.key} done`);
-  }
-
-  // --- Corrections loop ---
-  const keyMap = {};
-  for (const step of voiceSteps) {
-    keyMap[step.key.toLowerCase()] = step.key;
-    // Also map the label so users can say "duration" or "moisture reading"
-    keyMap[step.label.toLowerCase()] = step.key;
-  }
-
-  while (true) {
-    await playDynamic(
-      "Would you like to correct any field? Say the field name or 'no'."
+  try {
+    await voice.say(
+      `Starting your ${template.name}. You can say skip, go back, or repeat at any time.`
     );
-    const field = (await listenOnce()).toLowerCase();
-    if (field.includes("no")) break;
 
-    // Try to match what the user said to a field key or label
-    const matchedKey =
-      keyMap[field] || Object.keys(keyMap).find((k) => field.includes(k));
-    const key = matchedKey ? keyMap[matchedKey] || matchedKey : null;
+    for (let i = 0; i < steps.length; ) {
+      const step = steps[i];
+      onStep(step.key);
 
-    if (!key) {
-      await playDynamic("I didn't understand that field name.");
-      continue;
+      if (step.type === "date" && step.autoConfirm) {
+        const today = formatDateISO();
+        const ans = await voice.ask(step.question.replace("{{today}}", today));
+        if (ans === BACK) {
+          i = Math.max(0, i - 1);
+          continue;
+        }
+        if (ans === SKIP || !ans || YES.test(ans)) {
+          await set(step.key, today);
+        } else {
+          const fix = await voice.ask("Okay, what's the correct date?", { commands: false });
+          await set(step.key, fix || today);
+        }
+        i++;
+        continue;
+      }
+
+      const raw = await voice.ask(step.question, {
+        timeout: step.listenTimeout || 20000,
+      });
+      if (raw === BACK) {
+        i = Math.max(0, i - 1);
+        continue;
+      }
+      if (raw !== SKIP && raw) {
+        voice.think();
+        await set(step.key, await fillField(step, raw, data));
+      }
+      i++;
     }
 
-    const correctionStep = voiceSteps.find((s) => s.key === key);
-    if (!correctionStep) {
-      await playDynamic("I didn't understand that field name.");
-      continue;
-    }
-
-    await speak({ label: correctionStep.question });
-    onListening(true);
-    const raw = await listenOnce();
-    onListening(false);
-
-    let val = raw;
-    if (correctionStep.refine) {
-      val = await applyRefine(raw, correctionStep.refine, data);
-    }
-    if (correctionStep.normalize) {
-      val = applyNormalize(val, correctionStep.normalize);
-    }
-
-    data[key] = val;
-    setValue(key, val);
-    await playDynamic(`${correctionStep.label} updated.`);
+    onStep(null);
+    await reviewLoop({ voice, template, data, setField: set, onStep });
+    await voice.say("All set! Your report is ready to review.");
+    return data;
+  } finally {
+    onStep(null);
+    voice.idle();
   }
-
-  // --- Done ---
-  await playDynamic("All set! Your report is complete.");
-  const finalText = formatOutput(template, data);
-  saveReport(Date.now(), new Date().toISOString(), data, template.id);
-  return finalText;
 }

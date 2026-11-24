@@ -10,6 +10,7 @@ import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import ReportWizard from "./components/reports/ReportWizard";
 import ViewReports from "./pages/ViewReports";
+import TemplateBuilder from "./pages/TemplateBuilder";
 import ScrollToTop from "./utils/ScrollToTop";
 import MainLayout from "./components/layout/MainLayout";
 import { useViewportHeight } from "./hooks/useViewportHeight";
@@ -54,6 +55,7 @@ const App = () => {
             <Route path="/home" element={<Home />} />
             <Route path="/report/:templateId" element={<ReportWizard />} />
             <Route path="/view-reports" element={<ViewReports />} />
+            <Route path="/templates/new" element={<TemplateBuilder />} />
           </Route>
 
           {/* Redirect any unknown path back to landing */}

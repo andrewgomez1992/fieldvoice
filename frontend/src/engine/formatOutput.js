@@ -1,15 +1,14 @@
 /**
  * Generate the final report text by filling a template's outputTemplate
- * with the collected data values.
+ * with the collected data values. Supports {{name}} and {{company.name}}
+ * from the template metadata.
  *
- * Replaces {{key}} placeholders with values from data, and also supports
- * {{name}} and {{company.name}} from the template metadata.
- *
- * @param {Object} template - The full template object
- * @param {Object} data - The filled field values keyed by step key
- * @returns {string} The formatted report text
+ * @param {Object} template
+ * @param {Object} data - filled field values keyed by step key
+ * @param {{ placeholder?: (key: string) => string }} opts
+ *   placeholder - what to show for empty fields (default: empty)
  */
-export function formatOutput(template, data) {
+export function formatOutput(template, data, { placeholder } = {}) {
   const context = {
     ...data,
     name: template.name,
@@ -19,25 +18,57 @@ export function formatOutput(template, data) {
   return template.outputTemplate.replace(
     /\{\{(\w+(?:\.\w+)*)\}\}/g,
     (_, key) => {
-      // Check flat key first (handles "company.name" as a single key)
-      if (context[key] !== undefined) return context[key];
-      // Then try dot-notation traversal
-      const value = key.split(".").reduce((obj, k) => obj?.[k], context);
-      return value ?? "";
+      const value =
+        context[key] !== undefined && context[key] !== ""
+          ? context[key]
+          : key.split(".").reduce((obj, k) => obj?.[k], context);
+      if (value !== undefined && value !== null && value !== "") return value;
+      return placeholder ? placeholder(key) : "";
     }
   );
 }
 
+// --- Saved reports (on this device for now) ---
+
+const KEY = "reports";
+
+export function listReports() {
+  try {
+    const list = JSON.parse(localStorage.getItem(KEY) || "[]");
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+const write = (list) => localStorage.setItem(KEY, JSON.stringify(list));
+
 /**
- * Save a completed report to localStorage.
- *
- * @param {number} id - Unique report ID (typically Date.now())
- * @param {string} timestamp - ISO timestamp string
- * @param {Object} data - The filled report data
- * @param {string} templateId - The template ID this report was filled from
+ * Save a completed report. Returns its id.
+ * @param {Object} report { data, templateId, transcript? }
  */
-export function saveReport(id, timestamp, data, templateId) {
-  const stored = JSON.parse(localStorage.getItem("reports") || "[]");
-  stored.unshift({ id, timestamp, data, templateId });
-  localStorage.setItem("reports", JSON.stringify(stored));
+export function saveReport({ data, templateId, transcript }) {
+  const id = Date.now();
+  const list = listReports();
+  list.unshift({
+    id,
+    timestamp: new Date().toISOString(),
+    data,
+    templateId,
+    transcript: transcript || [],
+  });
+  write(list);
+  return id;
+}
+
+export function updateReport(id, data) {
+  write(
+    listReports().map((r) =>
+      r.id === id ? { ...r, data, updatedAt: new Date().toISOString() } : r
+    )
+  );
+}
+
+export function deleteReport(id) {
+  write(listReports().filter((r) => r.id !== id));
 }

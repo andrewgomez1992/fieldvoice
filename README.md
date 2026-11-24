@@ -40,7 +40,7 @@ FieldVoice turns the report into a conversation:
 | Layer | Tools |
 | --- | --- |
 | Front end | React 19, Vite, React Router, React Hook Form, Styled Components, Framer Motion |
-| Voice | Web Speech API (speech-to-text), AWS Polly (text-to-speech) |
+| Voice | OpenAI Realtime API (gpt-realtime-2.1 speech-to-speech over WebRTC); basic fallback: Web Speech API + AWS Polly |
 | AI | OpenAI Chat Completions |
 | Back end | Node.js, Express (controllers, routes, services, error middleware) |
 | Deploy | Vercel static build plus serverless `/api` functions |
@@ -69,7 +69,7 @@ Inspector speaks ─▶ Web Speech API ─▶ runWizard ─▶ applyRefine (Open
 
 ## Running it locally
 
-**Requirements:** Node.js 20+, an OpenAI API key, and AWS credentials with Polly access. Use Chrome for speech recognition.
+**Requirements:** Node.js 20+ and an OpenAI API key with credits. AWS Polly credentials are optional (only used by the basic fallback voice).
 
 ```bash
 # 1. Back end (port 3000)
@@ -91,11 +91,16 @@ Then open http://localhost:5173 and allow microphone access. The sign-in screen 
 
 ```dotenv
 OPENAI_API_KEY=your-openai-key
-OPENAI_MODEL=gpt-3.5-turbo
+OPENAI_MODEL=gpt-5.6-terra
+# Optional: realtime voice model and voice
+# REALTIME_MODEL=gpt-realtime-2.1        (or gpt-realtime-2.1-mini to save money)
+# REALTIME_VOICE=marin                   (or cedar)
+# Optional: AWS Polly, only for the basic fallback voice
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-aws-key
 AWS_SECRET_ACCESS_KEY=your-aws-secret
 TTS_VOICE=Joanna
+TTS_ENGINE=generative
 PORT=3000
 ```
 

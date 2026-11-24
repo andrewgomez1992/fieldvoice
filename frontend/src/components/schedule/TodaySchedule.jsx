@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { ArrowRightCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { listTemplates } from "../../templates";
 import { motion } from "framer-motion";
 
 const ScheduleWidget = styled(motion.div)`
@@ -83,17 +84,18 @@ export default function TodaySchedule({ jobs }) {
             variants={itemVariants}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            style={{ cursor: "pointer" }}
+            onClick={() =>
+              navigate(`/report/${job.templateId || listTemplates()[0].id}`, {
+                state: { preset: job },
+              })
+            }
           >
             <Info>
               <Time>{job.time}</Time>
               <Address>{job.address}</Address>
             </Info>
-            <ArrowRightCircle
-              size={24}
-              color="#fff"
-              style={{ cursor: "pointer" }}
-              onClick={() => navigate("/report", { state: { preset: job } })}
-            />
+            <ArrowRightCircle size={24} color="#2d2d72" aria-label="Start report" />
           </JobItem>
         ))}
       </List>

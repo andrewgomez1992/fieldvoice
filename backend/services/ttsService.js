@@ -13,9 +13,20 @@ export async function ttsService(text) {
     Text: text,
     OutputFormat: "mp3",
     VoiceId: process.env.TTS_VOICE || "Joanna",
-    Engine: "neural",
+    // "generative" is Polly's most human-sounding engine.
+    Engine: process.env.TTS_ENGINE || "generative",
     SampleRate: "24000",
   };
-  const { AudioStream } = await polly.synthesizeSpeech(params).promise();
-  return AudioStream;
+  try {
+    const { AudioStream } = await polly.synthesizeSpeech(params).promise();
+    return AudioStream;
+  } catch (err) {
+    if (params.Engine === "neural") throw err;
+    // Voice/region doesn't support generative: fall back to neural.
+    console.warn(`Polly ${params.Engine} failed, retrying with neural:`, err.message);
+    const { AudioStream } = await polly
+      .synthesizeSpeech({ ...params, Engine: "neural" })
+      .promise();
+    return AudioStream;
+  }
 }
